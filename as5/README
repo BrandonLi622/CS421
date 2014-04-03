@@ -1,0 +1,76 @@
+Brandon Li
+README
+CPSC 421
+Assignment 5
+
+I only made one change to env.sml: for VARentry, I added a new field called loopVar
+which tells you whether or not you can write to a variable (you cannot write/assign
+to loop variables).
+
+The return type was generally fairly clear (according to the spec) if there were not
+any errors. However, it was sometimes not really possible to return a meaningful
+type. The generaly philosophy that I went for was to return a type that was as close
+to the expected return type for that expression as possible to prevent long lists of
+cascading errors where many of the errors are not meaningful.
+
+But there were a couple places where the resulting behavior was not ideal. For example,
+when you create a new record that doesn't have any fields, I wasn't able to figure out
+what to print as a position because this is not supplied from the absyn tree!
+Sometimes I guessed that a T.INT tye would be the most probable result, but other times
+I just went ahead and returned things like T.UNIT (e.g. for loops, which are supposed
+to return nothing)
+
+Here are a couple more notes about how I did things in semant.sml:
+-When reporting an error about function parameters, I gave the position of the start of
+ the entire function call
+-When the "then" and "else" branches have one record and one nil, I always return the nil
+ (but when there are two nils I can only return nil)
+-I do the checking for duplicate type or function definitions in the firs pass (along with
+ putting in the "headers" into the environment)
+-An empty expression sequence for me returns T.UNIT
+-I assume that you can assign to a function parameter in the body of that function
+-When I find an error, if possible, I try to keep going to find other errors
+ (instead of returning immediately), which seems to me like the correct behavior
+ based on the examples
+-I require all names for parameter variables (and record fields) to be unique
+-I just return a T.UNIT for incorrect function applications (e.g. wrong name of function, 
+ undeclared function)
+
+Originally I had a number of places where my error messages disagreed with your sample test
+cases (mainly because I found some of your errors to be redundant soft failures). But I chose
+to modify it so that my semantic checker prints out (I think) at least all of the errors that you 
+do, for the sake of grading, so the error messages now may cascade a lot. I am sort of confused
+about if the goal is to maximize or minimize error messages in general. At first I thought it
+would be useful to return as few error messages as possible, but based on the Piazza comment
+that said that we must have at least all of the errors that you generate, I decided to allow
+errors to cascade. (Although the position I report for test10.tig is still different, I report the
+error at the place the cycle is created instead of the top of the set of declarations)
+
+Places my error messages originally disagreed with the sample test cases
+-I printed out an extra message for test05.tig in which I note both the incorrect
+ field name as well as the incorrect field type for line 27.
+-In test06.tig on line 41 I only printed out a single error (test06.tig.std has 3). The reason
+ I do this is because it really is just one error that gets cascaded due to however the
+ semantic checker chooses to return a result during an error. It looks like your implementation
+ returns something other than the expected type, whereas my implementation will continue to
+ return the correct type to try to avoid redundant message cascades.
+-In test07.tig I printed an error for the duplicated use of f as a function parameter
+-In test10.tig, the order of my error messages was different from yours. I go sequentially based
+ on position of the error, but you seem to push them onto some stack and print them all out
+ at the end for this case of nested function calls. Also, in this same file I report the cycle
+ in type definitions at the last type definition where the cycle is actually created (as opposed
+ to the first type declaration in the cycle, which was the case in test10.tig.std)
+
+
+My semant.sml file:
+-I used an actualTy function as the book recommended
+-Many of the other utilities that I wrote are either basic, self-explanatory, or have
+ a brief comment at the top
+-To handle the break statements, I used a global variable to keep track of nesting length,
+ and for the specific case of function declarations, set the loop depth to 0 there and then
+ reset it to its correct value (in order to not allow break statements in function definitions
+ that are not inside a loop inside the definition, as per the book)
+-I used the two-pass approach to handling mutual recursion. In my decFirstPass function,
+ I handle inserting all of the headers for type declarations and also fill in the function
+ declarations. In the same function I check for redeclarations and print out an error if
+ appropriate

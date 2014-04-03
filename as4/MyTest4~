@@ -1,0 +1,32 @@
+let
+var N := 8
+[[[ BEGIN tydecs
+type intArray = array of int
+]]] END tydecs
+var row := intArray[N] of 0
+var col := intArray[N] of 0
+var diag1 := intArray[((N+N)-1)] of 0
+var diag2 := intArray[((N+N)-1)] of 0
+[[[ BEGIN fundecs
+function printboard() =
+(for i := 0 to (N-1) do
+(for j := 0 to (N-1) do
+print(if (col[i]=j)
+then " O"
+else (col[i]=j));
+print("
+"));
+print("
+"))
+function try(c : int) =
+(for i := 0 to c do
+print(".");
+print("
+");
+flush();
+if (c=N)
+then printboard()
+else (c=N))
+]]] END fundecs
+
+in try(0) end

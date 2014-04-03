@@ -1,0 +1,35 @@
+Brandon Li
+Assignment 6
+CPSC 421
+
+Part a) The example input that I am using for my program is:
+a := 0
+b := a + 1
+c := c + b
+a := b * 2
+
+Not the most interesting program, but you can verify that the output is correctly
+based on the interference graph construction algorithm and graph coloring algorithm.
+
+The resulting liveness graph should be based on:
+
+                  1st        2nd
+   use def     out   in   out   in   
+------------------------------------
+4  b   a    |        b          b
+3  bc  c    |  b     bc   b     bc
+2  a   b    |  bc    ac   bc    ac
+1      a    |  ac    c    ac    c
+
+Suppose k=2, we can assign the colors:
+a -> reg1
+b -> reg1
+c -> reg2
+
+Since the interference graph kind of looks like this:
+
+(A)  (B)
+ |   /
+ |  /
+ | /
+(C)

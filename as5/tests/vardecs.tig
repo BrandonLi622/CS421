@@ -1,0 +1,33 @@
+let
+
+type recordt = {entry1 : int, entry2 : string}
+type recordt2 = recordt
+type arrayt = array of int
+type intt = int
+
+var foo1 := 5
+var foo2 := "a"
+var foo3 := recordt{entry1=foo1, entry2=foo2}
+var foo4 := arrayt[1] of 1
+var foo5 := ()
+
+var foo6 : int := 5
+var foo7 : string := "a"
+var foo8 : recordt2 := recordt{entry1=foo1, entry2=foo2}
+var foo9 : arrayt := arrayt[1] of 1
+var foo10 : recordt := nil
+var foo11 : intt := foo6
+
+var foo1 := "a"
+var foo2 := recordt{entry1=foo6, entry2=foo2}
+var foo3 := arrayt[1] of 1
+var foo4 := ()
+var foo5 := 5
+
+in
+foo1=foo7;
+foo2=foo8;
+foo3=foo9;
+foo4=();
+foo5=foo6
+end

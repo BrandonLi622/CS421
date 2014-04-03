@@ -1,0 +1,14 @@
+Need to add more specific error messages EVERYWHERE
+
+Duplicate names in a record?
+
+NIL!!
+
+I think I am handling h wrong
+I think all of the mutually recursive functions need to have a parameter for if it is in a loop
+
+Still need to handle the break statements
+
+TODO: Do I need the ! for checking record or array equality?
+
+Cannot re-define types (still need to do for var and function too)....hmm placeholder for functions?

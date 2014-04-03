@@ -1,0 +1,19 @@
+CM.make "sources.cm";
+let val x = Parse.parse "Tests/test01.tig"
+in print ("Test 1\n"); print (PP.pp x); print ("\n\n\n")
+end;
+let val x = Parse.parse "Tests/test02.tig"
+in print ("Test 2\n"); print (PP.pp x); print ("\n\n\n")
+end;
+let val x = Parse.parse "Tests/test03.tig"
+in print ("Test 3\n"); print (PP.pp x); print ("\n\n\n")
+end;
+let val x = Parse.parse "Tests/test04.tig"
+in print ("Test 4\n"); print (PP.pp x); print ("\n\n\n")
+end;
+let val x = Parse.parse "Tests/test05.tig"
+in print ("Test 5\n"); print (PP.pp x); print ("\n\n\n")
+end;
+let val x = Parse.parse "Tests/test06.tig"
+in print ("Test 6\n"); print (PP.pp x); print ("\n\n\n")
+end;

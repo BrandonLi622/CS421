@@ -1,0 +1,92 @@
+Brandon Li
+CPSC 421
+Assignment 2
+
+///////////////////
+/* General stuff */
+///////////////////
+So, the general approach for this assignment was to be careful with strings and comments. All of 
+the keywords, and even punctuation, ID's and INT's are all fairly easy to handle. I started with 2 
+extra states, STRING and COMMENT, but soon realized that handling multi-line strings (when we have 
+the \f__f\ pattern) would require an extra state, ESCAPE, for the purpose of correctly keeping track
+of line number. However, I do not handle any other escape sequences with the ESCAPE state because 
+that would require treating the first 2 characters (for \^c and other things like \n) differently, 
+and would ultimately probably require more states and be even messier. Alternatively, I tried using 
+a regular expression to match \f__f\ and use a function to handle updating the number of newlines,
+but that was also quite messy.
+
+The way that I organized my rules is:
+1) New line rules
+2) Whitespace in INITIAL state
+3) Keywords in INITIAL state
+4) Punctuation/symbols/arithmetic operators in INITIAL state
+5) Variable length tokens in INITIAL state (ID and INT)
+6) Double quotes in INITIAL state and basic string stuff
+7) Transitions to ESCAPE state
+8) ESCAPE state
+9) COMMENT state
+10) Catching rest of characters in all states
+
+Any character can go inside a comment, whereas unmatched characters (which
+go to the . rules) for any other state result in an error.
+
+//////////////////////
+/* Global variables */
+//////////////////////
+For both comments and strings, I had an extra global variable to keep track of the current state 
+because eof is detected by a function in the first section as opposed to a regular expression, and 
+so the only way to detect unclosed comments or strings is if the function knows what the current 
+state is when eof is seen. This was probably not the cleanest design (since there are multiple
+areas where redundant information is stored), but I couldn't think of any other ways of doing it. I 
+also had to remember to call reset() every time eof  is seen so that multiple files could be 
+tokenized in a session. 
+
+I also had a variable keeping track of current running string, the starting position of the string,
+and the current comment depth.
+
+//////////
+/* Ints */
+//////////
+I allow my ints to start with a 0 because whether or not this is forbidden is not specified,
+and if it were I feel this should be a semantic error not a lexical error.
+
+If the int is too large then I print an error and continue lexing
+
+/////////////////////
+/* Nested Comments */
+/////////////////////
+For nested comments, all I really had to do was to keep track of how many levels
+of comments there were. I haven't run into many problems with multi-line comments,
+especially because there isn't a concept of escape sequenecs, and I also
+don't have to keep track of what's inside the comments (unlike as in strings).
+
+/////////////
+/* Strings */
+/////////////
+Strings turned out to be the trickiest part of the assignment both for valid and invalid inputs. It 
+was often hard to figure out what the correct behavior was for, e.g. if you hit a newline in a 
+string (without the preceding escape character). For this particular case I decided to immediately 
+report it as both an illegal character and also as an unclosed string and then continue to detect 
+other errors. Essentially, I don't wait for the closing quotes and treat the next set of quotes as 
+the start of a new string.
+
+In order to represent the set of "printable characters" that are allowed in strings, I simply 
+disallowed the first 32 characters, which are control characters, and also the DEL character 
+(with value 127) and the assignment also forbids \ not followed by whitespace. STRCHAR represents 
+any printable character (including space)
+
+I also have a special rule so that if the \f____f\ pattern is started with a \ character and a 
+bunch of space and then is terminated by a " character, it still prints an error for using the 
+pattern incorrectly BUT it returns to INITIAL state and not string because we treat the " as 
+terminating the string that we are in (and we are definitely in a string if we're inESCAPE)
+
+Also, if I see a character c s.t. I have \f___fc, then I still add c to the running string
+
+Whenever there was an error in a string that was NOT an unclosed comment detected by seeing a 
+non-escaped newline in the string, I simply moved on past it after printing the error and would 
+still print the string (omitting the characters that caused the error) after the string is 
+terminated. e.g. for the example:
+
+"abc/  kdefg"
+
+then I will print an error followed by "abckdefg"

@@ -1,0 +1,193 @@
+if ((a+(((b*c)/d)*(0-e)))<((a+((b*c)/d))-e))
+then 1
+else if ((x+(y/z))<>(q/(0-5)))
+then (1+2)
+else 0val it = () : unit
+(let
+
+in () end;
+(f(x);
+g(y);
+("hello
+world";
+(0-(0-1073741823));
+break)))val it = () : unit
+let
+var a := 5
+[[[ BEGIN fundecs
+function f()  : int =
+g(a)
+function g(i : int) =
+f()
+]]] END fundecs
+[[[ BEGIN tydecs
+type tree = {key : int, children : treelist}
+type treelist = {head : tree, tail : treelist}
+]]] END tydecs
+[[[ BEGIN fundecs
+function h(t : tree) =
+g(t.key)
+]]] END fundecs
+[[[ BEGIN tydecs
+type atree = {key : int, children : treelist}
+]]] END tydecs
+var x := 3
+var y := 3
+var z := 3
+[[[ BEGIN tydecs
+type atreelist = {head : tree, tail : treelist}
+type a = int
+type b = int
+type c = int
+]]] END tydecs
+
+in (h(tree{key  = 5, children  = treelist{head  = Nil, tail  = Nil}})) endval it = () : unit
+if (if if a
+then (0-b)
+else 0
+then if a
+then 1
+else b
+else if c
+then 1
+else d)
+then 1
+else if (if if c
+then 1
+else d
+then if d
+then 1
+else e
+else if f
+then g
+else 0)
+then (if if if e
+then f
+else 0
+then 1
+else g
+then 42
+else 43)
+else 0val it = () : unit
+let
+var N := 8
+[[[ BEGIN tydecs
+type intArray = array of int
+]]] END tydecs
+var row := intArray[N] of 0
+var col := intArray[N] of 0
+var diag1 := intArray[((N+N)-1)] of 0
+var diag2 := intArray[((N+N)-1)] of 0
+[[[ BEGIN fundecs
+function printboard() =
+(for i := 0 to (N-1) do
+(for j := 0 to (N-1) do
+print(if (col[i]=j)
+then " O"
+else " .");
+print("
+"));
+print("
+"))
+function try(c : int) =
+(for i := 0 to c do
+print(".");
+print("
+");
+flush();
+if (c=N)
+then printboard()
+else for r := 0 to (N-1) do
+if if if (row[r]=0)
+then (diag1[(r+c)]=0)
+else 0
+then (diag2[((r+7)-c)]=0)
+else 0
+then (row[r] := 1;
+diag1[(r+c)] := 1;
+diag2[((r+7)-c)] := 1;
+col[c] := r;
+try((c+1));
+row[r] := 0;
+diag1[(r+c)] := 0;
+diag2[((r+7)-c)] := 0))
+]]] END fundecs
+
+in (try(0)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type any = {any : int}
+]]] END tydecs
+var buffer := getchar()
+[[[ BEGIN fundecs
+function readint(any : any)  : int =
+let
+var i := 0
+[[[ BEGIN fundecs
+function isdigit(s : string)  : int =
+if (ord(buffer)>=ord("0"))
+then (ord(buffer)<=ord("9"))
+else 0
+function skipto() =
+while if (buffer=" ")
+then 1
+else (buffer="
+") do
+buffer := getchar()
+]]] END fundecs
+
+in (skipto();
+any.any := isdigit(buffer);
+while isdigit(buffer) do
+(i := (((i*10)+ord(buffer))-ord("0"));
+buffer := getchar());
+i) end
+]]] END fundecs
+[[[ BEGIN tydecs
+type list = {first : int, rest : list}
+]]] END tydecs
+[[[ BEGIN fundecs
+function readlist()  : list =
+let
+var any := any{any  = 0}
+var i := readint(any)
+
+in (if any.any
+then list{first  = i, rest  = readlist()}
+else Nil) end
+function merge(a : list, b : list)  : list =
+if (a=Nil)
+then b
+else if (b=Nil)
+then a
+else if (a.first<b.first)
+then list{first  = a.first, rest  = merge(a.rest, b)}
+else list{first  = b.first, rest  = merge(a, b.rest)}
+function printint(i : int) =
+let
+[[[ BEGIN fundecs
+function f(i : int) =
+if (i>0)
+then (f((i/10));
+print(chr(((i-((i/10)*10))+ord("0")))))
+]]] END fundecs
+
+in (if (i<0)
+then (print("-");
+f((0-i)))
+else if (i>0)
+then f(i)
+else print("0")) end
+function printlist(l : list) =
+if (l=Nil)
+then print("
+")
+else (printint(l.first);
+print(" ");
+printlist(l.rest))
+]]] END fundecs
+var list1 := readlist()
+var list2 := (buffer := getchar();
+readlist())
+
+in (printlist(merge(list1, list2))) endval it = () : unit

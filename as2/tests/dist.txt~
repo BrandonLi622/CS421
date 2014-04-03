@@ -1,0 +1,25 @@
+Brandon Li
+Assignment 2
+Exercise 2.8
+
+a) You may have to check 3 additional characters before you match a token. Imagine you are
+in state 5, which is an accepting state. If you then see an 'e', you will move to a non-accepting
+state (state 6). If you then see a '+', for example, you will move again to a non-accepting
+state (state 7). From state 7 you can still reach an accepting state, so you cannot accept
+the sequence that led to state 5 as the token yet. Since the only state that state 7 leads to
+is state 8 (all other transitions lead to a stuck state), then the next character read will
+either move us to state 8 (in which case we are in an accepting state and keep reading), or we 
+will see a token that is NOT of the set {'0','1',...,'9'}, which would take us to a start state,
+and then we would just accept the sequence that brought us to state 5 as our token. However,
+even though we accept the token that we found at state 5, we still had to read 3 additional characters
+before we reached this conclusion. And this is the maximum number of characters past an accepting
+state we'll ever have to read because the longest sequence of non-accepting states between
+any two accepting states is only of length 2 (which means 3 hops), and that is the one that
+we described in this example.
+
+b) Imagine this is the input file:
+0e+a
+EOF
+
+Then we would move from state 0->5->6->7->STUCK, meaning we accept the token 0 (which was at state
+5), but clearly we had to read e+a before we decided to accept 0.

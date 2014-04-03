@@ -1,0 +1,5 @@
+let 
+    var v := "hello" 
+in 
+    (print(v)) 
+end

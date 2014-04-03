@@ -1,0 +1,122 @@
+Standard ML of New Jersey v110.74 [built: Sat Sep 29 18:19:30 2012]
+[opening as1.sml]
+[autoloading]
+[library $SMLNJ-BASIS/basis.cm is stable]
+[autoloading done]
+opening Int
+  type int = ?.int
+  val precision : Int31.int option
+  val minInt : int option
+  val maxInt : int option
+  val toLarge : int -> IntInf.int
+  val fromLarge : IntInf.int -> int
+  val toInt : int -> Int31.int
+  val fromInt : Int31.int -> int
+  val ~ : int -> int
+  val + : int * int -> int
+  val - : int * int -> int
+  val * : int * int -> int
+  val div : int * int -> int
+  val mod : int * int -> int
+  val quot : int * int -> int
+  val rem : int * int -> int
+  val min : int * int -> int
+  val max : int * int -> int
+  val abs : int -> int
+  val sign : int -> Int31.int
+  val sameSign : int * int -> bool
+  val > : int * int -> bool
+  val >= : int * int -> bool
+  val < : int * int -> bool
+  val <= : int * int -> bool
+  val compare : int * int -> order
+  val toString : int -> string
+  val fromString : string -> int option
+  val scan : StringCvt.radix
+             -> (char,'a) StringCvt.reader -> (int,'a) StringCvt.reader
+  val fmt : StringCvt.radix -> int -> string
+type id = string
+datatype binop = DIV | MINUS | PLUS | TIMES
+datatype stm = ASSIGN of string * exp | PRINT of exp list | SEQ of stm * stm
+datatype exp
+  = BINOP of exp * binop * exp
+  | CONST of int
+  | ESEQ of stm * exp
+  | VAR of string
+val prog = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+val prog2 = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+val max = fn : int * int -> int
+val max_of_list = fn : int list -> int
+val exp_maxargs = fn : exp -> int
+val maxargs = fn : stm -> int
+type id_pair = id * int
+type table = id_pair list
+exception badVariableReference
+exception badVariableReferenceVerbose of string
+val tableLookup = fn : id * id_pair list -> int
+val debugTableLookup = fn : id * table -> int
+val interp = fn : stm -> unit
+val interpExp = fn : exp * table -> int * table
+val interpStm = fn : stm * table -> table
+val updateAssignment = fn : id * int * id_pair list * table -> (id * int) list
+val handleAssignStm = fn : stm * table -> table
+val t = [("a",2),("b",3),("c",4)] : (string * int) list
+val it = (1,[("a",2),("b",3),("c",4)]) : int * table
+val it = (2,[("a",2),("b",3),("c",4)]) : int * table
+val testEseq = ESEQ (ASSIGN ("a",CONST #),VAR "a") : exp
+val it = (4,[("a",4),("c",4),("b",3)]) : int * table
+val testStm = SEQ (ASSIGN ("a",CONST #),PRINT [VAR #]) : stm
+3
+val it = [("a",3),("c",4),("b",3)] : table
+3
+val it = () : unit
+[opening test1b.sml]
+val prog = ASSIGN ("a1",CONST 500) : stm
+val it = () : unit
+val prog = SEQ (ASSIGN ("a2",CONST #),PRINT [VAR #]) : stm
+6
+val it = () : unit
+val prog = SEQ (SEQ (ASSIGN #,ASSIGN #),PRINT [ESEQ #,BINOP #,BINOP #]) : stm
+500
+400
+500 250000 1
+250
+val it = () : unit
+val prog = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+6 2 6000
+val it = () : unit
+val prog = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+8 8 8 8 8 8
+7
+80 80 80 80 80 8
+val it = () : unit
+val prog = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+8 7
+9990
+val it = () : unit
+val prog = SEQ (ASSIGN ("a",BINOP #),SEQ (ASSIGN #,PRINT #)) : stm
+8 7
+80
+val it = () : unit
+val prog = PRINT [] : stm
+
+val it = () : unit
+val prog = ASSIGN ("a3",CONST 500) : stm
+val it = () : unit
+val prog = SEQ (SEQ (ASSIGN #,ASSIGN #),PRINT [VAR #]) : stm
+400
+val it = () : unit
+val prog =
+  PRINT [ESEQ (ASSIGN #,VAR #),ESEQ (ASSIGN #,VAR #),ESEQ (PRINT #,VAR #)]
+  : stm
+500 400 300
+300
+val it = () : unit
+val prog = SEQ (ASSIGN ("a3",CONST #),PRINT [ESEQ #]) : stm
+500 ~10 1
+11
+10
+val it = () : unit
+- 
+Interrupt
+- 

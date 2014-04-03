@@ -1,0 +1,51 @@
+Brandon Li
+Assignment 6
+CPSC 421
+
+Part a) The example input that I am using for my program is:
+a := 0
+b := a + 1
+c := c + b
+a := b * 2
+
+Not the most interesting program, but you can verify that the output is correctly
+based on the interference graph construction algorithm and graph coloring algorithm.
+
+The resulting liveness graph should be based on:
+
+                  1st        2nd
+   use def     out   in   out   in   
+------------------------------------
+4  b   a    |        b          b
+3  bc  c    |  b     bc   b     bc
+2  a   b    |  bc    ac   bc    ac
+1      a    |  ac    c    ac    c
+
+Suppose k=2, we can assign the colors:
+a -> reg1
+b -> reg1
+c -> reg2
+
+Since the interference graph kind of looks like this:
+
+(A)  (B)
+ |   /
+ |  /
+ | /
+(C)
+
+b) instrs2graph() is done and interferenceGraph() is mostly done. I have not implemented color yet
+
+c) For OPER instructions, if you put jump=SOME, I am expecting all possible jump destinations to be explicitly stated.
+   The only assumption I will make is that if jump=NONE, it will fall through to the next node (see page 215), which means
+   that if jump=SOME and the next instruction is not explicitly specified, I will not assume that it is.
+
+   I have both the forward and reverse algorithms specified. Both seem to be correct, reverse algorithm gives better performance.
+
+   I am probably not going to implement the move optimization detailed in pages 221-222
+
+   I did not use those special data types liveset and livenessMap in my implementation because they did not really seem necessary.
+
+   I'm assuming that more than one definition at a node is an error
+
+   I am not going to use the precolored nodes for any other temporaries (less efficient, but easier to implement)

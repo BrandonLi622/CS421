@@ -1,0 +1,21 @@
+Brandon Li
+Assignment 2
+CPSC 421
+Extra Credit
+
+The different set of keywords, operators, and other symbols needs support from new transition
+rules (e.g., allowing things like @ symbols in annotations or ? : as a conditional operator),
+and there also needs to be support for Java's larger set of data types (although, I suppose in 
+principle a float can just be outputted as an int token followed by a DOT token and then another
+int token, although scientific notations till needs to somehow be separately handle). 
+Also, more escape sequences need to be allowed for, and instead of \ddd where each
+d is a decimal digit, Java supports octal escapes (so this would have to be changed). Java also
+does not allow nested comments, so this functionality would have to be taken out.
+
+Then, specifically in terms of handling Java's use of UTF-16 encoded Unicode characters, since
+Unicode is much larger than the Ascii set, we need to allow more characters inside
+strings and comments. Also, since Java also represents single characters as 'c' where c is a
+character, it would be nice to have a character token as well (though again, that could probably
+be specified as a single quote token followed by an ID token followed by a single quote token as
+well and just be passed off to the semantic analyzer for error detection). The allowance of Unicode
+characters does not change how ID's are formed.

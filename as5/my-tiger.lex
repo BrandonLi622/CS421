@@ -1,0 +1,204 @@
+(* Brandon Li
+   Assignment 2
+   CPSC 421 *)
+   
+type svalue = Tokens.svalue
+type pos = int
+type ('a, 'b) token = ('a, 'b) Tokens.token
+type lexresult = (svalue,pos) token
+   
+(* type pos = int
+type lexresult = Tokens.token *)
+
+val lineNum = ErrorMsg.lineNum
+val linePos = ErrorMsg.linePos
+fun err(p1,p2) = ErrorMsg.error p1
+
+(* Finds the numerical value of a character for error printing purposes *)
+fun charNumAsString(s) = Int.toString(Char.ord(hd(String.explode(s))));
+
+fun intFromString(s,pos) = valOf(Int.fromString(s)) handle
+                       Overflow => (ErrorMsg.error pos ("Int is too large"); ~1);
+
+datatype adjust = INC | DEC;
+datatype state  = INIT_STATE | COM_STATE | STR_STATE | ESC_STATE;
+
+val commentDepth = ref 0;
+val currentState = ref INIT_STATE;
+val currentString = ref "";
+val stringStart = ref 0;    (*the position where the string starts*)
+
+fun updateState(x) = currentState := x;
+
+(* Returns the state in string form, used for debugging purposes *)
+fun stateInStr(INIT_STATE) = "INIT_STATE"
+  | stateInStr(COM_STATE)  = "COM_STATE"
+  | stateInStr(STR_STATE)  = "STR_STATE"
+  | stateInStr(ESC_STATE)  = "ESC_STATE";
+
+(* Returns the string used for reporting illegal character messages *)
+fun illegalCharMsg(text) = "illegal char "^charNumAsString(text)^" "^stateInStr(!currentState);
+
+fun updateCommentDepth(x) = if x = INC 
+                            then commentDepth := (!commentDepth + 1)
+                            else commentDepth := (!commentDepth - 1);
+
+
+(* Returns the character (in string form) of the code represented by \ddd *)
+fun strFromCode(x,pos) = let
+                            val ddd_str = substring(x,1,3);
+                            val ddd_int = valOf(Int.fromString(ddd_str));
+                         in
+                            if ddd_int <= 255 andalso ddd_int >= 0 (*ascii from [0,255]*)
+                            then String.str(chr(ddd_int))
+                            else (ErrorMsg.error pos ("invalid ascii code"); "")
+                         end;
+
+(* Returns the character (in string form) of the code represented by \^c *)
+fun strFromCtrlChar(x) = let
+                            val c = hd(String.explode(String.substring(x,2,1)))
+                            
+                         in  (*subtracting 64 is defined behavior*)
+                            String.str(chr(ord(c) - 64)) 
+                         end;
+
+(* Gets called whenever an eof is seen, and first checks to see if we have
+any unterminated strings or comments and then resets all the variables before
+reading in the next file *)
+val eof = fn () => let val pos = hd(!linePos) 
+                   in
+                    (if !currentState = COM_STATE then ErrorMsg.error pos "unclosed comment"
+                     else if !currentState = STR_STATE then ErrorMsg.error pos "unclosed string"
+                     else if !currentState = ESC_STATE then ErrorMsg.error pos "unclosed string"
+                     else ();             
+                     ErrorMsg.reset(); stringStart := 0;
+                     currentState := INIT_STATE; commentDepth := 0; currentString := "";
+                     Tokens.EOF(pos,pos))
+                   end;
+
+
+%% 
+%header (functor TigerLexFun(structure Tokens : Tiger_TOKENS));
+%s COMMENT STRING ESCAPE;
+
+SPACE = [ \t\n];
+DIGIT = [0-9];
+ALPHA = [A-Za-z];
+ALPNUM = {DIGIT}|{ALPHA};
+
+ID  = {ALPHA}({ALPNUM}|_)*;
+INT = {DIGIT}+;
+STRCHAR = [^\000-\031\127\\];
+
+
+DDD = \\{DIGIT}{3};
+CTRL = \\\^[\064-\095];
+
+COMMSTART = \/\*;
+COMMEND   = \*\/;
+
+
+%%
+<INITIAL> \n	    =>  (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
+<COMMENT> \n	    =>  (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
+<STRING>  \n	    =>  (ErrorMsg.error yypos (illegalCharMsg(yytext)); 
+                         ErrorMsg.error yypos ("unclosed string"); YYBEGIN INITIAL; 
+                         updateState(INIT_STATE); currentString := "";
+                         lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
+<ESCAPE> "\n"       =>  (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
+
+<INITIAL> {SPACE}   =>  (continue());
+
+<INITIAL> while     =>  (Tokens.WHILE    (yypos,yypos+5));
+<INITIAL> for       =>  (Tokens.FOR      (yypos,yypos+3));
+<INITIAL> to        =>  (Tokens.TO       (yypos,yypos+2));
+<INITIAL> break     =>  (Tokens.BREAK    (yypos,yypos+5));
+<INITIAL> let       =>  (Tokens.LET      (yypos,yypos+3));
+<INITIAL> in        =>  (Tokens.IN       (yypos,yypos+2));
+<INITIAL> end       =>  (Tokens.END      (yypos,yypos+3));
+<INITIAL> function  =>  (Tokens.FUNCTION (yypos,yypos+8));
+<INITIAL> var  	    =>  (Tokens.VAR      (yypos,yypos+3));
+<INITIAL> type      =>  (Tokens.TYPE     (yypos,yypos+4));
+<INITIAL> array     =>  (Tokens.ARRAY    (yypos,yypos+5));
+<INITIAL> if        =>  (Tokens.IF       (yypos,yypos+2));
+<INITIAL> then      =>  (Tokens.THEN     (yypos,yypos+4));
+<INITIAL> else      =>  (Tokens.ELSE     (yypos,yypos+4));
+<INITIAL> do        =>  (Tokens.DO       (yypos,yypos+2));
+<INITIAL> of        =>  (Tokens.OF       (yypos,yypos+2));
+<INITIAL> nil       =>  (Tokens.NIL      (yypos,yypos+3));
+
+<INITIAL> ","	    =>  (Tokens.COMMA    (yypos,yypos+1));
+<INITIAL> ":"       =>  (Tokens.COLON    (yypos,yypos+1));
+<INITIAL> ";"       =>  (Tokens.SEMICOLON(yypos,yypos+1));
+<INITIAL> "."       =>  (Tokens.DOT      (yypos,yypos+1));
+<INITIAL> "("       =>  (Tokens.LPAREN   (yypos,yypos+1));
+<INITIAL> ")"       =>  (Tokens.RPAREN   (yypos,yypos+1));
+<INITIAL> "["       =>  (Tokens.LBRACK   (yypos,yypos+1));
+<INITIAL> "]"       =>  (Tokens.RBRACK   (yypos,yypos+1));
+<INITIAL> "{"       =>  (Tokens.LBRACE   (yypos,yypos+1));
+<INITIAL> "}"       =>  (Tokens.RBRACE   (yypos,yypos+1));
+<INITIAL> ">="      =>  (Tokens.GE       (yypos,yypos+2));
+<INITIAL> ">"       =>  (Tokens.GT       (yypos,yypos+1));
+<INITIAL> "<="      =>  (Tokens.LE       (yypos,yypos+2));
+<INITIAL> "<"       =>  (Tokens.LT       (yypos,yypos+1));
+<INITIAL> "="       =>  (Tokens.EQ       (yypos,yypos+1));
+<INITIAL> "<>"      =>  (Tokens.NEQ      (yypos,yypos+2));
+<INITIAL> "+"       =>  (Tokens.PLUS     (yypos,yypos+1));
+<INITIAL> "-"       =>  (Tokens.MINUS    (yypos,yypos+1));
+<INITIAL> "*"       =>  (Tokens.TIMES    (yypos,yypos+1));
+<INITIAL> "/"       =>  (Tokens.DIVIDE   (yypos,yypos+1));
+<INITIAL> "|"       =>  (Tokens.OR       (yypos,yypos+1));
+<INITIAL> "&"       =>  (Tokens.AND      (yypos,yypos+1));
+<INITIAL> ":="      =>  (Tokens.ASSIGN   (yypos,yypos+2));
+
+<INITIAL> {INT}     => (let val i = intFromString(yytext,yypos)
+                        in 
+                            if i > ~1
+                            then Tokens.INT(i,yypos,yypos+size(yytext))
+                            else continue()
+                        end);
+<INITIAL> {ID}      => (Tokens.ID (yytext,yypos,yypos+size(yytext)));
+
+<INITIAL> "\""      => (YYBEGIN STRING; updateState(STR_STATE); currentString := "";
+                        stringStart := yypos; continue());
+<STRING>  "\""      => (YYBEGIN INITIAL; updateState(INIT_STATE);
+                        Tokens.STRING(!currentString,!stringStart, yypos+1));
+<STRING> {DDD}      => (currentString := (!currentString ^ strFromCode(yytext,yypos));continue());
+<STRING> {STRCHAR}  => (currentString := (!currentString ^ yytext); continue());
+<STRING> "\\\""     => (currentString := (!currentString ^ "\""); continue());
+<STRING> "\\\\"     => (currentString := (!currentString ^ "\\"); continue());
+<STRING> "\\n"      => (currentString := (!currentString ^ "\n"); continue());
+<STRING> "\\t"      => (currentString := (!currentString ^ "\t"); continue());
+<STRING> {CTRL}     => (currentString := (!currentString ^ strFromCtrlChar(yytext)); continue());
+
+<STRING> "\\ "      => (YYBEGIN ESCAPE; updateState(ESC_STATE); continue());
+<STRING> "\\\t"     => (YYBEGIN ESCAPE; updateState(ESC_STATE); continue());
+<STRING> "\\\012"   => (YYBEGIN ESCAPE; updateState(ESC_STATE); continue());
+<STRING> "\\\n"     => (YYBEGIN ESCAPE; updateState(ESC_STATE); lineNum := !lineNum+1; 
+                        linePos := (yypos + 1) :: !linePos; continue());
+
+
+<ESCAPE> [ \t\012]    => (continue());
+<ESCAPE> "\""         => (YYBEGIN INITIAL; updateState(INIT_STATE); 
+                          ErrorMsg.error yypos ("improper use of \\f__f\\ pattern"^"here"); 
+                          Tokens.STRING(!currentString,!stringStart, yypos+1));
+<ESCAPE> "\\"         => (YYBEGIN STRING; updateState(STR_STATE); continue());
+<ESCAPE> {STRCHAR}    => (YYBEGIN STRING; updateState(INIT_STATE); 
+                          ErrorMsg.error yypos ("improper use of \\f__f\\ pattern"); 
+                          currentString := (!currentString ^ yytext); continue());
+
+
+<INITIAL> {COMMSTART} =>(YYBEGIN COMMENT;updateState(COM_STATE);updateCommentDepth(INC);continue());
+<COMMENT> {COMMSTART} =>(updateCommentDepth(INC); continue());
+<COMMENT> {COMMEND}   =>(updateCommentDepth(DEC); if !commentDepth = 0
+                                                  then (YYBEGIN INITIAL; updateState(INIT_STATE))
+                                                  else ();
+                                                  continue());
+                                                    
+<STRING>  .  => (ErrorMsg.error yypos (illegalCharMsg(yytext)); continue());                                                         
+<COMMENT> .  => (continue());                                                    
+<INITIAL> .  => (ErrorMsg.error yypos (illegalCharMsg(yytext)); continue());
+<ESCAPE>  .  => (YYBEGIN STRING; updateState(STR_STATE); 
+                 ErrorMsg.error yypos ("improper use of \\f__f\\ pattern"); 
+                 ErrorMsg.error yypos (illegalCharMsg(yytext)); continue());
+

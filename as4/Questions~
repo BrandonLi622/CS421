@@ -1,0 +1,41 @@
+Questions
+
+!!! Seems like output for test 2 is different than what I expected.
+
+Why doesn't it like the bars? Why does it replace them with semicolons?
+
+What is the number that goes into symbol?
+
+What about a sequence where there are just semicolons and nothing actually there?
+
+TODO: Handle let in end case
+
+Should I just put ref false for now for escape?
+What should I do for null types right now?
+Is result for functiondec the return type?
+
+maybe_expseq should be changed so that a null expseq is handled separately
+
+TODO: change name of maybe_expseq
+TODO: Check that A.NilExp is correct return for let ... in end
+TODO: make sure all of my positions are correct for anything that is an option!!! 
+Is the position for the option the position of that specific subexpression?
+
+Notes:
+For & and | how do we represent 0 and 1?
+For ArrayExp and other stuff, what is typ?
+Do I use the function Symbol.symbol to construct symbols?
+Right now using ID without the rest of lvalue
+What do the parentheses actually do?
+Be careful of let in end without anything in between!
+What should (exp) be?
+My explist_tail thing is a little suspect
+
+INCLUDE THIS: Changed the dec definition so that all successive function declarations and type
+declarations are always grouped together. Did this by not allowing 2 fundec_seq's to follow each other
+or 2 tydec_seq's to follow each other, meaning that all fundec's that are next to each other
+(and all tydecs that are next to each other) must be in the same group
+Also, changed my definition for maybe_expseq to distinguish between a single expression and an actual
+expression sequence, because these should be represented differently in the abstract syntax tree
+Had to change tfields for function declaration to separate new type called params because
+it is defined differently in the absyn.sml file

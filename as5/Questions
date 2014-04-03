@@ -1,0 +1,84 @@
+TODO: Is it a bug that my lexer returns a strange position for the first expression? I think
+it's like a negative sign or something
+
+I don't understand why it doesn't like the return value of error, it should be unit, right?
+
+Why does it say integer for the pre-defined function not instead of int?..
+
+Why would you have trvar inside of transexp and also a separate transvar function?..
+I guess his template didn't have a transvar...
+
+When do you want to convert a variable to its actual data type, immediately or only when
+you are checking?
+
+Why do I need a parenthesis around a case statement?
+
+Is it okay to have both the field name and the value be ty?
+
+Do we need to rehash all of the id's?
+
+Is a sequence expression the type of the last expression?
+
+Challenge to figure out how to add things to the environment and have it stay for the environment
+
+What if you have a record declared inside of a record?
+
+Prof Shao said that errors should be sensible and minimize number of total errors
+
+Can remove env from h, I think
+
+What about escape sequences in strings? Like if I want single quotes...
+
+Array number of elements must be an integer
+
+Unit value is no value, right, not nil?
+
+So a for loop where the high value is greater than low is still valid, right?
+
+***Not entirely clear what to do with the loop variable... do we add it to the environment or not?...
+***Do we have to check if a break is inside of a loop? => yes
+***What is the type of a break expression?
+
+VarDec does not have a declist in it...
+
+If the type doesn't match the initial value (for a VarDec) do we still add it to the environment?
+
+What should the return type of a let expressio be?
+
+What happens if you do enter on a variable that already exists?
+
+let var v:int := "hello" in print (v) end
+(what should be the correct steps here?)
+
+
+***Need to replace everything with actualTy
+
+I decided to make transdec recursive for FunctionDec and made sure at least one element was
+in it as I was recursing
+
+
+***Every time I do S.look I should really check the actualTy of it
+
+***Should I always try to reduce all the way from NAME immediately?
+
+When I run his parse I get errors...
+
+*** What do you do with a recordTy that has no fields (book says you can have empty records
+What do you report as the position here?
+
+
+***For bad variable type matches, I add the entry either way, and if the type is explicitly
+declared I add that, otherwise I just guess
+
+
+***Have to have records match nil!!! --> says in the book that nil belongs to every record type
+
+
+***In an if-else where there is a nil with a record type, you must record the record type
+
+
+***I'm using my-sources.cm for now, which has Quentin's lexer and my other stuff
+
+
+
+3/3/14 - Passing tests 1 and 2 but failing 3

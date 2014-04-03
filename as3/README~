@@ -1,0 +1,27 @@
+(* Brandon Li
+   CPSC 421
+   Assignment 3
+   README *)
+
+The only terminal that I added was UMINUS (which stands for unary minus), and the purpose
+of this was in order to use the %prec feature to be able to give the unary minus a
+higher precedence than the other arithmetic operators.
+
+I added a number of nonterminals that corresponded to the different types of valid
+"expressions" as they are defined in Appendix A of the textbook. 
+
+I started with 110 shift-reduce conflicts (never had to deal with any reduce-reduce conflicts),
+and most of them were pretty straightforward to eliminate by adding in precedence rules.
+The trickiest parts were dealing with if-then-else vs. if-then, and array creation vs.
+accessing an array as part of an lvalue. For the if-then-else problem, I just had to create
+another precedence rule that favored shifting towards if-then-else. For the second problem,
+I had to change the lvalue rule so that it did not do left recursion before it would be able
+to check for an "OF" token, just so that it could defer the decision that led to a shift-reduce
+conflict until checking to see if the OF token is really there.
+
+I tried left-factoring in some places but it didn't really seem to do much good, so I took
+most of the left-factoring out.
+
+As a quick explanation of the precedence rules, I took the operator ones from the book,
+and then decided that & and | should be left-associative because it seems that a & b & c is a 
+valid Tiger program based on the examples.

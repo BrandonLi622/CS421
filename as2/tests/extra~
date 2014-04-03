@@ -1,0 +1,12 @@
+Brandon Li
+Assignment 2
+CPSC 421
+Extra Credit
+
+The different set of keywords, operators, and other symbols needs support from new transition
+rules (e.g., allowing things like @ symbols in annotations or ? : as a conditional operator),
+and there also needs to be support for Java's larger set of data types (although, I suppose in 
+principle a float can just be outputted as an int token followed by a DOT token and then another
+int token). Also, more escape sequences need to be allowed for, and instead of \ddd where each
+d is a decimal digit, Java supports octal escapes (so this would have to be changed). 
+Then, specifically in terms of handling Java's use of UTF-16 encoded Unicode characters, we probably 

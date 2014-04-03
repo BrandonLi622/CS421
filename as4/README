@@ -1,0 +1,32 @@
+Brandon Li
+Assignment 4
+CPSC 421
+
+There were a few things I had to change in my grammar to make this assignment work:
+1) I had to modify exp_seq (and get rid of some nonterminals like explist, explist_tail,
+   maybe_expseq, and expseq) to accomodate the changes in the spec posted on piazza for
+   SeqExp's
+2) I rewrote lvalue so that it had left recursion (instead of right recursion) so that I could
+   more easily perform the appropriate actions. I had to introduce some new nonterminals to
+   get rid of the shift-reduce conflicts after this change: I added nonterminals lvalue_recurse,
+   lvalue_array, and lvalue_field. This made it so that once we had seen ID . DOT (or ID . LBRACK)
+   then the grammar knew to not reduce the ID to an lvalue and to continue shifting.
+3) To accomodate the function definition grouping and type definition grouping, I had to create
+   a number of new nonterminals to essentially make it so that all function defintions (and
+   type definitions) that are contiguous MUST go together (cannot have two fundec's in a row)
+4) Had to add a new nonterminal called params to accomodate for function declarations because
+   they take "formals" instead of a "tfield" (even though the fields are basically the same)
+
+Other notes:
+1) lvalue's are left-associative because FieldVar and SubscriptVar only take var as the left
+   parameter.
+2) I always set escape to "ref true" (I'm not really sure what escape is...)
+3) I assumed that "result" in fundec meant the return type
+4) My precedence rules are the same as in Assignment 3
+5) For the positions of a parameter, I counted the start of the ID, not the COMMA (because
+   that seemed kind of silly)
+6) Whenever it asked for a position within a SOME constructor I gave the position of the leftmost
+   token within the SOME constructor
+7) I followed Piazza in terms of how expression sequences should be represented (e.g. in the body
+   of a let statement I have an exp_seq even if it's only 1 exp, because that seemed to be
+   the expected behavior based on the Piazza post).

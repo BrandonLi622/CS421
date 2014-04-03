@@ -1,0 +1,2 @@
+(b.c + 3; 3 + 4; c := 5; rec {a="c", b = 5}; arr[3] of 5 + 4; if 35 then "c" else "d";
+while 35 do print(chr(3 + c)); let var v:int := "hello" in print (v) end)

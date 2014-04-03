@@ -1,0 +1,62 @@
+(* Brandon Li
+   CPSC 421
+   Assignment 3 *)
+
+structure A = Absyn
+
+%%
+%term
+    EOF 
+  | ID of string
+  | INT of int | STRING of string 
+  | COMMA | COLON | SEMICOLON | LPAREN | RPAREN | LBRACK | RBRACK 
+  | LBRACE | RBRACE | DOT 
+  | PLUS | MINUS | UMINUS | TIMES | DIVIDE | EQ | NEQ | LT | LE | GT | GE
+  | AND | OR | ASSIGN
+  | ARRAY | IF | THEN | ELSE | WHILE | FOR | TO | DO | LET | IN | END | OF 
+  | BREAK | NIL
+  | FUNCTION | VAR | TYPE 
+
+%nonterm  exp of A.exp | program of A.exp | lvalue | explist | func_call |func_args | arithmetic
+| comparison | bool_exp | record | rec_entries 
+| decseq | dec | tydec | vardec | fundec | expseq | tyfields | tyfields_tail | ty
+| maybe_expseq | explist_tail | in_parens | id_end | lvalue_tail
+
+%pos int
+%verbose
+%start program
+%eop EOF
+%noshift EOF 
+%name Tiger
+
+%keyword WHILE FOR TO BREAK LET IN END FUNCTION VAR TYPE ARRAY IF THEN ELSE 
+	DO OF NIL
+
+%prefer THEN ELSE LPAREN
+
+%value ID ("bogus")
+%value INT (1)
+%value STRING ("")
+
+%nonassoc DO
+%nonassoc THEN 
+%nonassoc ELSE
+%nonassoc ASSIGN
+%nonassoc OF
+%left OR
+%left AND
+%nonassoc EQ NEQ GT LT GE LE
+%left PLUS MINUS
+%left TIMES DIVIDE
+%left UMINUS
+
+%%
+
+program	      : exp				                                   (exp)
+
+exp           
+              : NIL                                                (A.NilExp)
+              
+           
+
+

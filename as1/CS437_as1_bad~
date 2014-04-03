@@ -1,0 +1,86 @@
+drop table department cascade; 
+drop table classroom cascade; 
+drop table time_slot cascade; 
+drop table student cascade; 
+drop table course cascade; 
+drop table section cascade; 
+drop table takes cascade; 
+drop table instructor cascade; 
+drop table teaches cascade;
+
+create table student(
+    ID          varchar(5),
+    name        varchar(20) not null,
+	dept_name	varchar(20),
+	tot_cred	numeric(3,0),
+	primary key (ID),
+	foreign key (dept_name) references department);
+
+create table takes(
+	ID		varchar(5),
+	course_id	varchar(8),
+	sec_id		varchar(8),
+	semester	varchar(6),
+	year		numeric(4,0),
+	grade		varchar(2),
+	primary key (ID, course_id, sec_id, semester, year),
+	foreign key (ID) references student,
+	foreign key (course_id, sec_id, semester, year) references section);
+
+create table course(
+	course_id	varchar(8),
+	title		varchar(50),
+	dept_name	varchar(20),
+	credits		numeric(2,0),
+	primary key (course_id),
+	foreign key (dept_name) references department);
+
+create table department(
+	dept_name	varchar(20),
+	building	varchar(15),
+	budget	numeric(12,2),
+	primary key (dept_name));
+
+create table classroom(
+	building	varchar(15),
+	room_no	varchar(6),
+	capacity	numeric(3,0),
+	primary key (building, room_no));
+
+create table section(
+	course_id	varchar(8),
+	sec_id		varchar(8),
+	semester	varchar(6),
+	year		numeric(4,0),
+	building	varchar(15),
+	room_no	varchar(6),
+	time_slot_id	varchar(7),
+	primary key (course_id, sec_id, semester, year),
+	foreign key (building, room_no) references classroom,
+	foreign key (time_slot_id) references time_slot);
+
+create table time_slot(
+	time_slot_id	varchar(7),
+	day		varchar(2),
+	start_time	varchar(7),
+	end_time	varchar(7),
+	primary key (time_slot_id, start_time));
+
+create table teaches(
+	ID		varchar(5),
+	course_id	varchar(8),
+	sec_id		varchar(8),
+	semester	varchar(6),
+	year		numeric(4,0),
+	primary key (course_id, sec_id, semester, year),
+	foreign key (ID) references instructor,
+	foreign key (course_id, sec_id, semester, year) references section);
+
+create table instructor(
+	ID		varchar(5), 
+	name		varchar(20) not null,	
+	dept_name	varchar(20),
+	salary		numeric(8,2),
+	primary key (ID),
+	foreign key (dept_name) references department);
+

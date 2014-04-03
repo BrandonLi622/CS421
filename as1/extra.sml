@@ -1,0 +1,146 @@
+(* Brandon Li, Assignment 1 for CPSC 421 *)
+
+(**********************************************************************)
+(* Extra Credit *)
+(**********************************************************************)
+(* Exercise a and b. Note that the functionality in part b overwrites the part a functionality *)
+
+(* To write the member function, all you need to do is do the binary search
+   through the tree and see if we end up finding the key *)
+
+open String;
+
+type key = string
+datatype 'a tree = LEAF | TREE of 'a tree * key * 'a * 'a tree
+
+val empty = LEAF
+
+fun insert(LEAF,key,value) = TREE(LEAF,key,value,LEAF)
+  | insert(TREE(l,k,v,r),key,value) =
+               if k > key
+                then TREE(insert(l,key,value),k,v,r)
+               else if key > k
+                then TREE(l,k,v,insert(r,key,value))
+               else TREE(l,key,value,r);
+
+fun member(key, LEAF) = false
+  | member(key, TREE(l,k,_,r)) = if (key = k) then true 
+                                 else if (k > key) then member(key,l)
+                                 else member(key,r);
+
+(* only can print int tree, and this only works because nodes must have unique keys *)
+(* prints tuples of form (key, parent key, direction from parent to this node) *)
+fun printTreeHelper(LEAF, _,_) = print("")
+  | printTreeHelper(TREE(l,k,x,r), parent, sideOfParent) = (print("("^k^", "^Int.toString(x)^", "^parent^", "^sideOfParent^")\n"); printTreeHelper(l, k, "LEFT"); printTreeHelper(r, k, "RIGHT"))
+
+and printTree(tree) = printTreeHelper(tree, "", "");
+
+
+(* Exercise c.a *)
+(* values inserted not important for this demonstration, only keys *)
+val tree1 = empty;
+val tree1 = insert(tree1,"t",1);   
+val tree1 = insert(tree1,"s",1);
+val tree1 = insert(tree1,"p",1);
+val tree1 = insert(tree1,"i",1);
+val tree1 = insert(tree1,"p",1);
+val tree1 = insert(tree1,"f",1);
+val tree1 = insert(tree1,"b",1);
+val tree1 = insert(tree1,"s",1);
+val tree1 = insert(tree1,"t",1);
+
+(* Output of printTree(tree1)
+(t, 1, , )
+(s, 1, t, LEFT)
+(p, 1, s, LEFT)
+(i, 1, p, LEFT)
+(f, 1, i, LEFT)
+(b, 1, f, LEFT)
+
+
+which looks like this:      
+                            t
+                           / \
+                          s
+                         / \
+                        p
+                       / \
+                      i
+                     / \
+                    f
+                   / \
+                  b     
+*)
+
+(* Exercise c.b *)
+(* values inserted not important for this demonstration, only keys *)
+val tree2 = empty;
+val tree2 = insert(tree2,"a",1);
+val tree2 = insert(tree2,"b",1);
+val tree2 = insert(tree2,"c",1);
+val tree2 = insert(tree2,"d",1);
+val tree2 = insert(tree2,"e",1);
+val tree2 = insert(tree2,"f",1);
+val tree2 = insert(tree2,"g",1);
+val tree2 = insert(tree2,"h",1);
+val tree2 = insert(tree2,"i",1);
+
+(* Output of printTree(tree2)
+(a, 1, , )
+(b, 1, a, RIGHT)
+(c, 1, b, RIGHT)
+(d, 1, c, RIGHT)
+(e, 1, d, RIGHT)
+(f, 1, e, RIGHT)
+(g, 1, f, RIGHT)
+(h, 1, g, RIGHT)
+(i, 1, h, RIGHT)
+
+which looks like this:
+                            a
+                           / \
+                              b
+                             / \
+                                c
+                               / \
+                                  d
+                                 / \
+                                    e
+                                   / \
+                                      f
+                                     / \
+                                        g
+                                       / \
+                                          h
+                                         / \
+                                            i
+                                           / \       
+
+Clearly, neither of these two trees are balanced because a balanced tree
+must satisfy the property that for every node, the height of the right and
+left subtrees differ by at most one. This property fails even at the root
+node for both trees. In fact, both examples result in linked lists, the worst
+case for a binary tree.
+*)     
+
+(* Exercise d *)
+(* 
+A suitable self-balancing tree data structure is the red black tree, in which
+each node maintains an extra bit of "color" information (either red or black).
+Balancing is only performed on insertions. The way that it works is that a node
+is inserted as normal and given the color red (and given 2 black "leaf" children, 
+and then it is rotated up the tree (while some nodes are recolored)
+until the red-black tree property is satisfied, which is namely that the
+path from the root to any leaf node will contain the same number of black nodes
+(while some other properties of the tree are maintained, like:
+1) all nodes have 2 children
+2) all red nodes have 2 black nodes as children
+3) every leaf is black)
+
+The balancing is not perfect, but there are proofs that show that a red-black
+tree will be no taller than 2(logN + 1) in height, which still guarantees
+logarithmic time complexity for search. Also, none of the balancing happens
+during lookup (lookups do not alter the tree at all), which makes the data
+structure suitable for functional programming
+*)
+

@@ -1,0 +1,131 @@
+(* Brandon Li
+   CPSC 421
+   Assignment 3 *)
+
+(* TODO: Remember to link sources.cm to the correct file *)
+
+%%
+%term
+    EOF 
+  | ID of string
+  | INT of int | STRING of string 
+  | COMMA | COLON | SEMICOLON | LPAREN | RPAREN | LBRACK | RBRACK 
+  | LBRACE | RBRACE | DOT 
+  | PLUS | MINUS | UMINUS | TIMES | DIVIDE | EQ | NEQ | LT | LE | GT | GE
+  | AND | OR | ASSIGN
+  | ARRAY | IF | THEN | ELSE | WHILE | FOR | TO | DO | LET | IN | END | OF 
+  | BREAK | NIL
+  | FUNCTION | VAR | TYPE 
+
+%nonterm  exp | program | lvalue | explist | func_call |func_args | arithmetic
+| comparison | bool_exp | record | rec_entries 
+| decseq | dec | tydec | vardec | fundec | expseq | tyfields | tyfields_tail | ty
+| maybe_expseq | explist_tail | in_parens | id_end | arr_ref
+
+%pos int
+%verbose
+%start program
+%eop EOF
+%noshift EOF 
+%name Tiger
+
+%keyword WHILE FOR TO BREAK LET IN END FUNCTION VAR TYPE ARRAY IF THEN ELSE 
+	DO OF NIL
+
+%prefer THEN ELSE LPAREN
+
+%value ID ("bogus")
+%value INT (1)
+%value STRING ("")
+
+%nonassoc THEN DO OF
+%nonassoc ELSE
+%nonassoc ASSIGN
+%nonassoc OR
+%nonassoc AND
+%nonassoc EQ NEQ GT LT GE LE
+%left PLUS MINUS
+%left TIMES DIVIDE
+%left UMINUS
+
+%%
+
+program	      : exp				                                   ()
+
+exp           : lvalue                                             ()
+              | NIL                                                ()
+              | LPAREN in_parens RPAREN                            ()
+              | INT                                                ()
+              | STRING                                             ()
+              | MINUS exp                             %prec UMINUS ()
+              | func_call                                          ()
+              | arithmetic                                         ()
+              | comparison                                         ()
+              | bool_exp                                           ()
+              | record                                             ()
+              | ID arr_ref OF exp                                     ()
+              | lvalue ASSIGN exp                                  ()
+              | IF exp THEN exp ELSE exp                           ()
+              | IF exp THEN                                        ()
+              | WHILE exp DO exp                                   ()
+              | FOR ID ASSIGN exp TO exp DO exp                    ()
+              | BREAK                                              ()
+              | LET decseq IN maybe_expseq END                     ()
+
+arr_ref       : LBRACK exp RBRACK                                  ()
+in_parens     :                                                    ()
+              | exp                                                ()
+              | explist                                            ()
+
+lvalue        : ID                                                 ()
+              | lvalue DOT ID                                      ()
+              | lvalue arr_ref                                     ()
+explist       : exp explist_tail                                   ()
+explist_tail  : SEMICOLON explist                                  ()
+              | SEMICOLON exp                                      ()
+func_call     : ID LPAREN RPAREN                                   ()
+              | ID LPAREN func_args RPAREN                         ()
+func_args     : exp                                                ()
+              | exp COMMA func_args                                ()
+arithmetic    : exp PLUS exp                                       ()
+              | exp MINUS exp                                      ()
+              | exp TIMES exp                                      ()
+              | exp DIVIDE exp                                     ()
+comparison    : exp EQ exp                                         ()
+              | exp NEQ exp                                        ()
+              | exp LT exp                                         ()
+              | exp LE exp                                         ()
+              | exp GT exp                                         ()
+              | exp GE exp                                         ()
+bool_exp      : exp AND exp                                        ()
+              | exp OR exp                                         ()
+record        : ID LBRACE RBRACE                                   ()
+              | ID LBRACE rec_entries RBRACE                       ()
+rec_entries   : ID EQ exp                                          ()
+              | ID EQ exp COMMA rec_entries                        ()
+decseq        :                                                    ()
+              | dec decseq                                         ()
+dec           : tydec                                              ()
+              | vardec                                             ()
+              | fundec                                             ()
+tydec         : TYPE ID EQ ty                                      ()
+ty            : ID                                                 ()
+              | LBRACE tyfields RBRACE                             ()
+              | ARRAY OF ID                                        ()
+tyfields      :                                                    ()
+              | ID COLON ID tyfields_tail                          ()
+tyfields_tail : COMMA ID COLON ID tyfields_tail                    () 
+              |                                                    ()
+vardec        : VAR ID ASSIGN exp                                  ()
+              | VAR ID COLON ID ASSIGN exp                         ()
+fundec        : FUNCTION ID LPAREN tyfields RPAREN EQ exp          ()
+              | FUNCTION ID LPAREN tyfields RPAREN COLON ID EQ exp ()
+              
+              
+maybe_expseq  :                                                    ()
+              | expseq                                             ()
+expseq        : exp                                                ()
+              | exp SEMICOLON expseq                               ()
+
+
+

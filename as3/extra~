@@ -1,0 +1,177 @@
+(* Brandon Li
+   CPSC 421
+   Assignment 3 *)
+
+This is what my YACC grammar file would look like for exercise 3.3(e)
+
+In a real compiler I probably would not check for correctness in a grammar (or even in
+the syntactic analyzer at all). I would probably just allow any combination of the 5 words
+to pass the synctactic analyzer, and then check for duplicates in the semantic analyzer.
+
+
+%%
+%pos int
+%eop EOF
+%noshift EOF 
+
+%name extra 
+%term
+    EOF 
+  | public | final | static | synchronized | transient
+
+%nonterm  passed1 | passed2 | passed3 | passed4 | passed5 
+| passed12 | passed13 | passed14 | passed15 | passed23 | passed24 | passed25 | passed34 | passed35 | passed45
+| passed123 | passed124 | passed125 | passed134 | passed135 | passed145 | passed234 | passed235 | passed245 | passed345
+| passed1234 | passed1235 | passed1245 | passed1345 | passed2345 | expassed | passedrogram
+
+%%
+
+program       : exp            ()
+exp           : public passed1     ()                                
+              | final passed2     ()
+              | static passed3     ()  
+              | synchronized passed4     ()
+              | transient passed5     ()
+              |                ()
+              
+
+passed1       : final passed12    ()
+              | static passed13    ()
+              | synchronized passed14    ()
+              | transient passed15    ()
+              |                ()
+
+passed2       : public passed12    ()
+              | static passed23    ()
+              | synchronized passed24    ()
+              | transient passed25    ()
+              |                ()
+
+passed3       : public passed13    ()
+              | final passed23    ()
+              | synchronized passed34    ()
+              | transient passed35    ()
+              |                ()
+
+passed4       : public passed14    ()
+              | final passed24    ()
+              | static passed34    ()
+              | transient passed45    ()
+              |                ()
+
+passed5       : final passed12    ()
+              | static passed13    ()
+              | synchronized passed14    ()
+              | transient passed15    ()
+              |                ()
+              
+passed12      : static passed123   ()
+              | synchronized passed124   ()
+              | transient passed125   ()
+              |                ()
+                
+passed13      : final passed123   ()
+              | synchronized passed134   ()
+              | transient passed135   ()
+              |                ()
+              
+passed14      : final passed124   ()
+              | static passed134   ()
+              | transient passed145   ()
+              |                ()
+              
+passed15      : final passed125   ()
+              | static passed135   ()
+              | synchronized passed145   ()
+              |                ()
+              
+passed23      : public passed123   ()
+              | synchronized passed234   ()
+              | transient passed235   ()
+              |                ()
+              
+passed24      : public passed124   ()
+              | static passed234   ()
+              | transient passed245   ()
+              |                ()
+              
+passed25      : public passed125   ()
+              | static passed235   ()
+              | synchronized passed245   ()
+              |                ()
+              
+passed34      : public passed134   ()
+              | final passed234   ()
+              | transient passed345   ()
+              |                ()
+              
+passed35      : public passed135   ()
+              | final passed235   ()
+              | synchronized passed345   ()
+              |                ()
+              
+passed45      : public passed145   ()
+              | final passed245   ()
+              | static passed345   ()
+              |                ()
+
+
+passed123     : synchronized passed1234  ()
+              | transient passed1235  ()
+              |                ()
+              
+passed124     : static passed1234  ()
+              | transient passed1245  ()
+              |                ()
+              
+passed125     : static passed1235  ()
+              | synchronized passed1245  ()
+              |                ()
+              
+passed134     : final passed1234  ()
+              | transient passed1345  ()
+              |                ()
+              
+passed135     : final passed1235  ()
+              | synchronized passed1345  ()
+              |                ()
+              
+passed145     : final passed1245  ()
+              | static passed1345  ()
+              |                ()
+              
+passed234     : public passed1234  ()
+              | transient passed2345  ()
+              |                ()
+              
+passed235     : public passed1235  ()
+              | synchronized passed2345  ()
+              |                ()
+              
+passed245     : public passed1245  ()
+              | static passed2345  ()
+              |                ()
+              
+passed345     : public passed1345  ()
+              | final passed2345  ()
+              |                ()
+
+
+passed1234    : transient             ()
+              |                ()
+              
+passed1235    : synchronized             ()
+              |                ()
+              
+passed1245    : static             ()
+              |                ()
+              
+passed1345    : final             ()
+              |                ()
+              
+passed2345    : public             ()
+              |                ()
+
+
+
+

@@ -1,0 +1,383 @@
+(* Brandon Li
+   CPSC 421
+   Assignment 5*)
+
+signature SEMANT =
+sig
+  type ir_code
+  val transprog : Absyn.exp -> {exp: ir_code, ty: Types.ty}
+end
+
+structure Semant : SEMANT = 
+struct
+
+  structure A = Absyn
+  structure E = Env
+  structure S = Symbol
+  structure T = Types
+  val error = ErrorMsg.error
+  type ir_code = unit (* not used for the time being *)
+
+  
+  (*** FILL IN DETAILS OF YOUR TYPE CHECKER PLEASE !!! ***)
+
+  (*************************************************************************
+   *                       UTILITY FUNCTIONS                               *
+   *************************************************************************)
+
+  (* ...... *)
+  
+  (* Used for returns of g and h, gives you the type of the expression *)
+  fun getType({exp, ty}) = ty
+  
+  fun actualTy(T.NAME(sym, ref(SOME(typ))), tenv) =  actualTy(typ, tenv)
+    | actualTy(x, _) = x;
+    
+  
+  (* Returns the type associated with a field of a record, error if it can't find it *)
+  fun typeOfField(((sym1:string,hash1:int), ty)::xs, (sym2,hash2)) = 
+        if sym1=sym2 andalso hash1=hash2 
+        then ty 
+        else typeOfField(xs, (sym2,hash2))
+    | typeOfField(nil, _) = (print("Field does not exist"); T.INT); 
+  
+  
+  fun printTypeHelper(T.NIL) = print "NIL "
+    | printTypeHelper(T.INT) = print "INT "
+    | printTypeHelper(T.STRING) = print "STRING "
+    | printTypeHelper(T.UNIT) = print "UNIT "
+    | printTypeHelper(T.NAME(_,_)) = print "NAME "
+    | printTypeHelper(T.ARRAY(ty,_)) = (printTypeHelper(ty); print "ARRAY ")
+    | printTypeHelper(T.RECORD(_,_)) = print "RECORD ";
+  
+  
+  fun printType(t) = (printTypeHelper(t); print("\n"));
+  
+  fun sameType(T.RECORD(_, u1), T.RECORD(_,u2), _) = if u1 = u2 then true else false
+    | sameType(T.ARRAY(_, u1), T.ARRAY(_, u2), _) = if u1 = u2 then true else false
+    | sameType(T.NIL, T.RECORD(_,_), _) = true
+    | sameType(T.RECORD(_,_), T.NIL, _) = true
+    | sameType(T.NIL, T.NIL, _) = true
+    | sameType(T.INT, T.INT, _) = true
+    | sameType(T.STRING, T.STRING, _) = true
+    | sameType(T.UNIT, T.UNIT, _) = true
+    | sameType(T.NAME(a,b), t, tenv) = sameType(actualTy(T.NAME(a,b), tenv), actualTy(t, tenv), tenv)
+    | sameType(t, T.NAME(a,b), tenv) = sameType(actualTy(t, tenv), actualTy(T.NAME(a,b), tenv), tenv)
+    | sameType(t1, t2, _) = if t1 = t2 then true else false;
+  
+
+  fun checkInt ({exp, ty = T.INT}, pos) = ()
+    | checkInt ({exp = _, ty = _}, pos) = error pos ("Should be integer type for this operator")
+  
+  (* TODO: In case of an error, what type should the return be? *)
+  (* Checks whether or not these two expressions can be compared using EqOp or NeqOp *)
+  fun checkComp ({exp=e1, ty=T.INT}, {exp=e2, ty=T.INT}, pos, _) = {exp=(), ty=T.INT}
+    | checkComp ({exp=e1, ty=T.RECORD(r1,unique1)}, 
+                 {exp=e2, ty=T.RECORD(r2,unique2)}, pos, tenv) =
+        if unique1 = unique2
+        then {exp=(), ty=T.RECORD(r1,unique1)}
+        else (error pos ("Cannot compare these two record types"); {exp=(), ty=T.INT})
+    | checkComp ({exp, ty=T.ARRAY(a1,unique1)}, 
+                 {exp, ty=T.ARRAY(a2,unique2)}, pos, _) =
+        if unique1 = unique2         
+        then {exp=(), ty=T.ARRAY(a1,unique1)}
+        else (error pos ("Cannot compare these two array types"); {exp=(), ty=T.INT})
+    | checkComp ({exp=exp1, ty=T.NAME(symlist, u)}, {exp=exp2, ty=ty2}, pos, tenv) =
+        checkComp({exp=exp1, ty=actualTy(T.NAME(symlist,u), tenv)}, {exp=exp2, ty=actualTy(ty2, tenv)}, pos, tenv)
+    | checkComp ({exp=exp2, ty=ty2}, {exp=exp1, ty=T.NAME(symlist, u)}, pos, tenv)  =
+        checkComp({exp=exp2, ty=actualTy(ty2, tenv)}, {exp=exp1, ty=actualTy(T.NAME(symlist,u), tenv)}, pos, tenv)   
+    | checkComp (_, _, pos, _) = (error pos ("Cannot use Eq or Neq on these two types ");
+                               {exp=(), ty=T.UNIT}); (* TODO: What to put here?.. *)
+                               
+  
+  (* TODO: Should I reduce all the way? *)
+  fun paramToFormal(tenv, {var,typ,pos}) = case S.look(tenv, typ)
+                                            of SOME(ty) => ty
+                                             | NONE => (error pos ("Parameter is of undef type");
+                                                        T.INT)
+  fun paramsToFormals(tenv, x::xs) = paramToFormal(tenv,x)::paramsToFormals(tenv,xs)
+    | paramsToFormals(tenv, nil) = nil;
+
+
+ (**************************************************************************
+  *                   TRANSLATING TYPE EXPRESSIONS                         *
+  *                                                                        *
+  *              transty : (E.tenv * A.ty) -> (T.ty * A.pos)               *
+  *************************************************************************)
+  
+  (*Use this later, I think for decs...*)
+  fun transty (tenv, A.ArrayTy(id, pos)) = 
+        (case S.look(tenv, id)
+            of SOME(t) => (T.ARRAY(t, ref ()), pos)
+             | NONE => (T.UNIT,pos)) (* TODO: Just for the sake of returning something... *)
+    | transty (tenv, A.NameTy(sym,pos)) =
+        (case S.look(tenv,sym)
+            of SOME(t) => (T.NAME(sym, ref(SOME(t))), pos)
+             | NONE => (T.UNIT, pos)) (* TODO: this needs to change for mutual recursion *)
+    | transty (tenv, A.RecordTy(nil)) = (T.RECORD(nil, ref ()), 0) (* TODO: What do we do here for position? *)
+    | transty (tenv, A.RecordTy({name,typ,pos}::xs)) = (T.RECORD(makeRecPairs(tenv, {name=name,typ=typ,pos=pos}::xs), ref ()), pos)
+             
+  (* This function is only used in transty, converts the abstract syntax tfield to
+     pairs usable for T.RECORD *)
+  and makeRecPairs (tenv, {name,typ,pos}::xs) =
+        (case S.look(tenv,typ)
+            of SOME(t) => (name, t)::makeRecPairs(tenv, xs)
+             | NONE => (error pos ("Undef type " ^ S.name(typ)); (name, T.UNIT)::makeRecPairs(tenv, xs))) (*TODO: I just have it continue returning something so that we could keep going *) 
+    | makeRecPairs (tenv, nil) = nil;
+
+
+ (**************************************************************************
+  *                   TRANSLATING EXPRESSIONS                              *
+  *                                                                        *
+  *  transexp : (E.env * E.tenv) -> (A.exp -> {exp : ir_code, ty : T.ty})  *
+  **************************************************************************)
+  fun transexp (env, tenv) expr =
+
+    (*TODO: I don't think we need to care about which operand it is... *)  
+    let fun g (A.OpExp {left,oper=A.EqOp,right,pos}) = checkComp(g left,g right,pos, tenv)    (*Placeholder*)
+          | g (A.OpExp {left,oper=A.NeqOp,right,pos}) = checkComp(g left, g right, pos, tenv) (*Placeholder*)
+          | g (A.OpExp {left,oper,right,pos}) = 
+                (checkInt (g left, pos); checkInt (g right, pos); {exp=(), ty=T.INT})
+          | g (A.VarExp(x)) = h(x) 
+          | g (A.NilExp) = {exp=(), ty=T.NIL} 
+          
+          
+          | g (A.RecordExp {typ,fields,pos}) =
+                (case S.look(tenv, typ)
+                    of SOME(T.RECORD(sym_list, u)) =>
+                            checkRecType(sym_list,fields,T.RECORD(sym_list,u),pos)
+                     | NONE => (error pos ("Undef type " ^ S.name(typ)); {exp=(), ty=T.INT})
+                     | _    => (error pos ("Incorrect RecordExp, not a correct record type");
+                                {exp=(), ty=T.INT}))
+                                
+          | g (A.ArrayExp {typ,size,init,pos}) = 
+                (case S.look(tenv, typ)
+                    of SOME(T.ARRAY(arrtype, u)) =>
+                            let 
+                                val {exp,ty} = g(init)
+                            in
+                                if sameType(arrtype,ty,tenv)
+                                then 
+                                    (if sameType(getType(g(size)), T.INT, tenv)
+                                     then {exp=(), ty=T.ARRAY(arrtype,u)}
+                                     else (error pos ("Exp inside brackets should return an int");
+                                                      {exp=(), ty=T.INT}))
+                                else (error pos ("Array does not match type definition");
+                                      {exp=(), ty=T.INT})
+                            end
+                     | NONE => (error pos ("Undef type " ^ S.name(typ)); {exp=(), ty=T.INT})
+                     | _    => (error pos ("Incorrect ArrayExp, not a correct array type");
+                                {exp=(), ty=T.INT}))
+
+          | g (A.IntExp(_)) = {exp=(), ty=T.INT}
+          | g (A.StringExp(_,_)) = {exp=(), ty=T.STRING}
+          
+          | g (A.SeqExp((exp,pos)::nil)) = g exp
+          | g (A.SeqExp((exp,pos)::xs)) = (g exp; g(A.SeqExp(xs)))
+          
+          | g (A.AssignExp({var,exp,pos})) =
+                let
+                    val {exp=exp1, ty=ty1} = h(var);
+                    val {exp=exp2, ty=ty2} = g(exp)
+                in
+                    (if (not(sameType(ty1,ty2,tenv))) 
+                     then error pos ("Bad assignment, different types given")
+                     else ();
+                     {exp=(), ty=T.UNIT})
+                end
+ 
+          | g (A.IfExp({test, then', else', pos})) = 
+               if sameType(getType(g(test)), T.INT, tenv)
+               then
+                    case else'
+                        of NONE => {exp=(), ty=getType(g(then'))}
+                         | SOME(exp) => let
+                                            val ty1 = getType(g(then'))
+                                            val ty2 = getType(g(exp))
+                                        in
+                                            if sameType(ty1,ty2,tenv)
+                                            then {exp=(), ty=ty1}
+                                            else (error pos ("Then and else must return same type");
+                                                  {exp=(), ty=T.INT} )
+                                        end
+               else (error pos ("If condition must result in an integer"); {exp=(), ty=T.INT})
+          | g (A.WhileExp({test, body, pos})) =
+               if sameType(getType(g(test)), T.INT,tenv)
+               then
+                    (if sameType(getType(g(body)), T.UNIT,tenv)
+                     then {exp=(), ty=T.UNIT}
+                     else (error pos ("Expression inside loop body must return unit");
+                           {exp=(), ty=T.UNIT}))
+               else (error pos ("Loop condition must result in an integer"); {exp=(), ty=T.INT}) 
+          
+          | g (A.ForExp({var={name,escape}, lo, hi, body, pos})) = 
+               if sameType(getType(g(lo)), T.INT,tenv) andalso sameType(getType(g(hi)), T.INT,tenv)
+               then
+                    (if sameType(getType(transexp (env,tenv) body), T.UNIT,tenv)
+                     then {exp=(), ty=T.UNIT}
+                     else (error pos ("Expression inside loop body must return unit");
+                           {exp=(), ty=T.UNIT}))
+               else (error pos ("Loop variable bounds must evaluate to integers");
+                     {exp=(), ty=T.INT})
+          
+          | g (A.BreakExp(pos)) = {exp=(), ty=T.UNIT}
+          
+          | g (A.AppExp({func,args,pos})) =
+                (case S.look(env,func)
+                    of SOME(E.FUNentry{level, label, formals, result}) =>
+                        (funParamsCorrect(args,formals,pos); {exp=(), ty=result} )  
+                     | SOME(E.VARentry{access,ty}) => 
+                        (error pos ((S.name func) ^ " is a variable, not a function");
+                         {exp=(), ty=T.INT})
+                     | NONE => (error pos ("Undef function"); {exp=(), ty=T.INT}))
+          
+          (* Returns whatever the body returns. It expects a sequence, which is checked in the
+             syntactic checker *)
+          | g (A.LetExp({decs,body,pos})) =
+                let
+                    val (new_env, new_tenv) = transdecs(env,tenv,decs)
+                in
+                    (transexp (new_env, new_tenv) body) 
+                end
+          
+          | g _ (* other cases *) = {exp=(), ty=T.INT} 
+
+        (* function dealing with "var", may be mutually recursive with g *)
+        (* TODO: Check error position *)
+        and h (A.SimpleVar (id,pos)) = 
+                (case S.look(env, id)
+                    of SOME(E.VARentry({access, ty=T.INT})) => {exp=(), ty=T.INT}
+                     | SOME(E.VARentry({access, ty=T.STRING})) => {exp=(), ty=T.STRING} 
+                     | SOME(E.VARentry({access, ty=T.NAME(symbol, u)})) => 
+                            (case actualTy(T.NAME(symbol, u), tenv)
+                                of T.INT => {exp=(), ty=T.INT}
+                                 | T.STRING => {exp=(), ty=T.STRING}
+                                 | _ => (error pos ("Var " ^ S.name(id) ^ " is not a simple var"); {exp=(), ty=T.INT}))
+                     | NONE => (error pos ("Undef variable"); {exp=(), ty=T.INT})
+                     | _ => (error pos ("Bad simple var " ^ S.name(id)); {exp=(), ty=T.INT}))
+	      | h (A.SubscriptVar (A.SimpleVar(id,pos1),exp,pos2)) = 
+	            (case S.look(env, id)
+                    of SOME(E.VARentry({access, ty=T.ARRAY(ty,_)})) => {exp=(), ty=ty} 
+                     | NONE => (error pos1 ("Undef variable"); {exp=(), ty=T.INT})
+                     | _ => (error pos1 ("Bad array reference"); {exp=(), ty=T.INT}))
+          | h (A.SubscriptVar (v,exp,pos)) = 
+                (case h(v)
+                    of {exp, ty=T.ARRAY(ty,_)} => {exp=(), ty=ty}
+                     | {exp, ty} => (error pos ("Bad array reference"); {exp=(), ty=T.INT}))
+              
+              
+              
+          | h (A.FieldVar (A.SimpleVar(id1,pos1),id2,pos)) =
+                (case S.look(env, id1)
+                    of SOME(E.VARentry({access, ty=T.RECORD(_,_)})) => {exp=(), ty=T.INT}
+                     | NONE => (error pos1 ("Undef variable"); {exp=(), ty=T.INT})
+                     | _ => (error pos1 ("Bad record reference"); {exp=(), ty=T.INT}))
+	      | h (A.FieldVar (v,id,pos)) = 
+	            (case h(v)
+	                of {exp, ty=T.RECORD(x::xs,_)} => {exp=(), ty=T.INT} (*Need to identify the type*)
+	                 | {exp, ty} => (error pos ("Bad record reference"); {exp=(), ty=T.INT}))
+
+        (* Checks if the fields are correct, same return style as g() and h(), if possible *)
+        and checkRecType(nil,nil,target_typ, _) = {exp=(), ty=target_typ}
+          | checkRecType((sym1,ty1)::xs, (sym2,exp,pos)::ys, target_typ, overall_pos) =
+                let
+                    val {exp=_,ty=ty2} = g(exp)
+                in
+                    if (S.name sym1) = (S.name sym2)
+                    then
+                        (if sameType(ty1, ty2, tenv) 
+                        then checkRecType(xs,ys,target_typ, overall_pos)
+                        else (error pos ("Record field does not match type"); {exp=(), ty=T.INT}))
+                    else (error pos ("Record field named '" ^ (S.name sym2) ^ "' does not exist"
+                                      ^ " in specified record type");
+                          {exp=(), ty=T.INT})
+                end
+          | checkRecType(_,_,_, overall_pos) = (error overall_pos ("Mismatched number of fields");
+                                                {exp=(), ty=T.INT})
+        
+        
+        (* Checks if the function paramaters are correct and gives error if not. No return value *)
+        and funParamsCorrect(nil,nil,_) = ()
+          | funParamsCorrect(exp::xs,ty::ys,overall_pos) =
+                if sameType(getType(g(exp)), ty,tenv)
+                then funParamsCorrect(xs,ys,overall_pos)
+                else error overall_pos ("Incorrect function arguments")
+          | funParamsCorrect(_,_,overall_pos) = error overall_pos ("Wrong number of parameters"); 
+          
+     in g expr
+    end
+
+ (**************************************************************************
+  *                   TRANSLATING DECLARATIONS                             *
+  *                                                                        *
+  *  transdec : (E.env * E.tenv * A.dec) -> (E.env * E.tenv)               *
+  **************************************************************************)
+  and transdec (env, tenv, A.VarDec({var={name,escape},typ,init,pos})) = 
+        (case typ
+            of SOME((symbol,pos2)) =>
+                (case S.look(tenv, symbol)
+                    of SOME(ty) => if sameType(getType(transexp (env,tenv) init), ty, tenv)
+                                   then (S.enter(env, name, E.VARentry({access=(), ty=ty})), tenv)
+                                   else (error pos ("Type doesn't match initial value"); 
+                                         (S.enter(env, name, E.VARentry({access=(),ty=ty})), tenv))
+                     | NONE => (error pos ("Undef type " ^ S.name(symbol)); 
+                                (S.enter(env, name, E.VARentry({access=(), ty=T.INT})), tenv)))   (* TODO: Just guessing the type here! *) 
+             | NONE => (S.enter(env, name,
+                                E.VARentry({access=(),ty=getType(transexp (env,tenv) init)})), tenv))
+    | transdec (env, tenv, A.FunctionDec({name,params,result,body,pos}::xs)) =
+        let
+            val {exp,ty} = (transexp (env,tenv) body)
+        in
+            (case result
+                of SOME(symbol, pos2) =>
+                    (case S.look(tenv, symbol)
+                        of SOME(ty2) =>
+                            if sameType(ty2, ty, tenv)
+                            then (transdec(S.enter(env, name, 
+                                                   E.FUNentry({level=(),label=(), 
+                                                               formals=paramsToFormals(tenv,params),
+                                                               result=actualTy(ty2,tenv)})), 
+                                           tenv, A.FunctionDec(xs)))
+                            else (error pos ("Function body type does not match return type");
+                                  (transdec(S.enter(env, name, 
+                                                    E.FUNentry({level=(),label=(),
+                                                                formals=paramsToFormals(tenv,params), 
+                                                                result=ty2})),
+                                            tenv, A.FunctionDec(xs)))) (* TODO: should the formals be nil? *)
+                         | NONE => (error pos2 ((S.name symbol) ^ " cannot be " ^
+                                                "found in type environment");
+                                    (transdec(S.enter(env, name,
+                                                      E.FUNentry({level=(),label=(),
+                                                                  formals=paramsToFormals(tenv,params),
+                                                                  result=ty})),
+                                              tenv, A.FunctionDec(xs)))))
+                 | NONE => 
+                    (transdec(S.enter(env, name, E.FUNentry({level=(),label=(), 
+                                                             formals=paramsToFormals(tenv,params),
+                                                             result=ty})), 
+                              tenv, A.FunctionDec(xs))))
+        end
+    | transdec (env, tenv, A.FunctionDec(nil)) = (env, tenv) (* Never will get here on first call *)
+    | transdec (env, tenv, A.TypeDec({name,ty,pos=pos2}::xs)) =
+        let
+            val (typ, pos3) = transty(tenv, ty)
+        in
+            transdec(env, S.enter(tenv, name, typ), A.TypeDec(xs))
+        end
+    | transdec (env, tenv, A.TypeDec(nil)) = (env, tenv)
+
+
+
+  (*** transdecs : (E.env * E.tenv * A.dec list) -> (E.env * E.tenv) ***)
+  and transdecs (env,tenv,nil) = (env, tenv)
+    | transdecs (env,tenv,dec::decs) =
+	let val (env',tenv') = transdec (env,tenv,dec)
+ 	 in transdecs (env',tenv',decs)
+	end
+
+  (*** transprog : A.exp -> {exp : ir_code, ty : T.ty} ***)
+  fun transprog prog = transexp (E.base_env, E.base_tenv) prog
+
+end  (* structure Semant *)
+  
+

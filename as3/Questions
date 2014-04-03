@@ -1,0 +1,78 @@
+Is Nil considered a valid value producing expression?
+Is it considered better style to have epsilons in rules or not?
+Mumbo jumbo stuff he mentions in book to add?
+What are those things that started in the file?
+Should check on left or right associativity...
+Should I make type-id a thing or only check that in the semantic checker
+there's something we can do for if-then-else problems in the book (and also if then)
+What is "other" in the matched-unmatched thing
+Do we need parenthesis around a sequence? Seems like queens doesn't use it...
+is it bad form to have multiple definitions that are the same thing?
+Need to change my thing from exp
+I don't understand how his solution in the slides fixes anything... --> it gives me fewer shift-reduce but more reduce-reduce and a "rule not reduced" conflict
+Why would you ever left factor that just seems to create problems
+Putting else and do at same precedence didn't seem to break anything
+What about this rule: %nonassoc RPAREN RBRACK RBRACE
+I guess only the rightmost terminals matter (as said in the slides)
+THEN should be lower precedence than ELSE, right? Where do DO and OF go, then?
+Does the tree have to be logical?
+OF is higher than ASSIGN because you can assign to an array
+AND and OR must be left-associative
+
+ID vs. ID DOT ID...which one should have higher precedence? seems like ID DOT ID should --> how do we fix this?...
+
+Notes
+-----
+8 shift-reduce conflicts after adding in the arithmetic operators
+4 went away after precedence rules
+up to 26 shift-reduce conflicts after adding in comparison operators
+6 went away after precedence rules
+up to 38 shift-reduce conflicts after adding in boolean expressions
+2 went away after predencence rules
+up to 49 shift-reduce conflicts after adding in array creation
+up tp 61 shift-reduce conflicts after adding in assignment
+up to 73 shift-reduce conflicts after adding in if-then-else
+up to 86 shift-reduce conflicts after adding in if-then
+up to 98 shift-reduce conflicts after adding in while
+up to 110 shift-reduce conflicts after adding in for
+down to 98 after putting ELSE at lower precedence
+down to 86 after clarified precedence of assignment
+down to 74 after got rid of op_bool
+down to 62 after got rid of op_comp
+down to 50 after got rid of op_arith
+down to 26 after put DO at lower precedence than all operators
+down to 14 after getting rid of maybe_else
+down to 2 after putting OF at lower precedence
+down to 1 after putting ELSE above THEN, OF, DO
+
+TO DO
+-----
+Still need precedence rule for negation!
+Mine still has it as right recursion
+Left factoring?
+I'm going to assume that operators bind tighter than like assignment
+
+
+Things I added
+----------------
+Tried left factoring if then else and also let statements and also parenthesis stuff, didn't really do much
+Make assignment weaker than boolean (what about with regards to else)
+Got rid of op_bool so that the precedence of the boolean rule was clearer
+Moved ID to a separate rule called identifier to remove ambiguity
+Introduced a reduce-reduce conflict after I made it so that decs can be empty -> got rid of it by getting rid of rule for dec
+Got rid of last conflict by making lvalue right-recursive instead of left-recursive
+
+
+Done rules
+----------
+lvalue
+NIL
+sequencing
+()
+INT
+STRING
+negation 
+
+Skipped rules
+-------------
+valueless (semantic, not syntactic concern)

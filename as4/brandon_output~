@@ -1,0 +1,427 @@
+Standard ML of New Jersey v110.74 [built: Sat Sep 29 18:19:30 2012]
+- [autoloading]
+[library $smlnj/cm/cm.cm is stable]
+[library $smlnj/internal/cm-sig-lib.cm is stable]
+[library $/pgraph.cm is stable]
+[library $smlnj/internal/srcpath-lib.cm is stable]
+[library $SMLNJ-BASIS/basis.cm is stable]
+[autoloading done]
+[scanning sources.cm]
+[attempting to load plugin $/lex-ext.cm]
+[library $/lex-ext.cm is stable]
+[library $smlnj/cm/tools.cm is stable]
+[library $smlnj/internal/cm-lib.cm is stable]
+[plugin $/lex-ext.cm loaded successfully]
+[attempting to load plugin $/mllex-tool.cm]
+[library $/mllex-tool.cm is stable]
+[plugin $/mllex-tool.cm loaded successfully]
+[attempting to load plugin $/grm-ext.cm]
+[library $/grm-ext.cm is stable]
+[plugin $/grm-ext.cm loaded successfully]
+[attempting to load plugin $/mlyacc-tool.cm]
+[library $/mlyacc-tool.cm is stable]
+[plugin $/mlyacc-tool.cm loaded successfully]
+[library $/ml-yacc-lib.cm is stable]
+[library $SMLNJ-LIB/Util/smlnj-lib.cm is stable]
+[library $SMLNJ-ML-YACC-LIB/ml-yacc-lib.cm is stable]
+[loading (sources.cm):tiger.grm.sig]
+[loading (sources.cm):errormsg.sml]
+[loading (sources.cm):tiger.lex.sml]
+[loading (sources.cm):table.sig]
+[loading (sources.cm):table.sml]
+[loading (sources.cm):symbol.sml]
+[loading (sources.cm):absyn.sml]
+[loading (sources.cm):tiger.grm.sml]
+[loading (sources.cm):parse.sml]
+[loading (sources.cm):printabsyn-std.sml]
+[New bindings added.]
+val it = true : bool
+let
+[[[ BEGIN tydecs
+type arrtype = array of int
+]]] END tydecs
+var arr1 : arrtype := arrtype[10] of 0
+
+in (arr1) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type myint = int
+type arrtype = array of myint
+]]] END tydecs
+var arr1 : arrtype := arrtype[10] of 0
+
+in (arr1) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, age : int}
+]]] END tydecs
+var rec1 : rectype := rectype{name  = "Nobody", age  = 1000}
+
+in (rec1.name := "Somebody";
+rec1) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function nfactor(n : int)  : int =
+if (n=0)
+then 1
+else (n*nfactor((n-1)))
+]]] END fundecs
+
+in (nfactor(10)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type intlist = {hd : int, tl : intlist}
+type tree = {key : int, children : treelist}
+type treelist = {hd : tree, tl : treelist}
+]]] END tydecs
+var lis : intlist := intlist{hd  = 0, tl  = Nil}
+
+in (lis) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function do_nothing1(a : int, b : string) =
+do_nothing2((a+1))
+function do_nothing2(d : int) =
+do_nothing1(d, "str")
+]]] END fundecs
+
+in (do_nothing1(0, "str2")) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function do_nothing1(a : int, b : string)  : int =
+(do_nothing2((a+1));
+0)
+function do_nothing2(d : int)  : string =
+(do_nothing1(d, "str");
+" ")
+]]] END fundecs
+
+in (do_nothing1(0, "str2")) endval it = () : unit
+if ((10>20))
+then 30
+else 40val it = () : unit
+if ((5>4))
+then 13
+else " "val it = () : unit
+while ((10>5)) do
+(5+6)val it = () : unit
+for i := 10 to " " do
+i := (i-1)val it = () : unit
+let
+var a := 0
+
+in (for i := 0 to 100 do
+(a := (a+1);
+())) endval it = () : unit
+(3>"df")val it = () : unit
+let
+[[[ BEGIN tydecs
+type arrtype = array of int
+type rectype = {name : string, id : int}
+]]] END tydecs
+var rec := rectype{name  = "aname", id  = 0}
+var arr := arrtype[3] of 0
+
+in (if (rec<>arr)
+then 3
+else 4) endval it = () : unit
+if 20
+then 3val it = () : unit
+let
+[[[ BEGIN tydecs
+type a = c
+type b = a
+type c = d
+type d = a
+]]] END tydecs
+
+in ("") endval it = () : unit
+let
+[[[ BEGIN tydecs
+type tree = {key : int, children : treelist}
+]]] END tydecs
+var d : int := 0
+[[[ BEGIN tydecs
+type treelist = {hd : tree, tl : treelist}
+]]] END tydecs
+
+in (d) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function do_nothing1(a : int, b : string)  : int =
+(do_nothing2((a+1));
+0)
+]]] END fundecs
+var d := 0
+[[[ BEGIN fundecs
+function do_nothing2(d : int)  : string =
+(do_nothing1(d, "str");
+" ")
+]]] END fundecs
+
+in (do_nothing1(0, "str2")) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function do_nothing1(a : int, b : string)  : int =
+(do_nothing2((a+1));
+0)
+function do_nothing2(d : int)  : string =
+(do_nothing1(a, "str");
+" ")
+]]] END fundecs
+
+in (do_nothing1(0, "str2")) endval it = () : unit
+while (10>5) do
+((i+1);
+())val it = () : unit
+let
+[[[ BEGIN fundecs
+function nfactor(n : int) =
+if (n=0)
+then 1
+else (n*nfactor((n-1)))
+]]] END fundecs
+
+in (nfactor(10)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, id : int}
+]]] END tydecs
+var rec1 := rectype{name  = "Name", id  = 0}
+
+in (rec1.nam := "asd") endval it = () : unit
+/c/cs421/as/testcases/test23.tig:8.2:syntax error: inserting  SEMICOLON
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, id : int}
+]]] END tydecs
+var rec1 := rectype{name  = "aname", id  = 0}
+
+in (rec1.name := 3;
+rec1.id := "") endval it = () : unit
+let
+var d := 0
+
+in (d[3]) endval it = () : unit
+let
+var d := 0
+
+in (d.f) endval it = () : unit
+(3+"var")val it = () : unit
+let
+var a := 0
+[[[ BEGIN fundecs
+function g(a : int)  : int =
+a
+]]] END fundecs
+
+in (g(2)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type rectype1 = {name : string, id : int}
+type rectype2 = {name : string, id : int}
+]]] END tydecs
+var rec1 : rectype1 := rectype2{name  = "Name", id  = 0}
+
+in (rec1) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type arrtype1 = array of int
+type arrtype2 = array of int
+]]] END tydecs
+var arr1 : arrtype1 := arrtype2[10] of 0
+
+in (arr1) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type a = array of int
+type b = a
+]]] END tydecs
+var arr1 : a := b[10] of 0
+
+in (arr1[2]) endval it = () : unit
+let
+var a : int := " "
+
+in (a) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type arrayty = array of int
+]]] END tydecs
+var a := arrayty[10] of " "
+
+in (0) endval it = () : unit
+let
+var a := rectype{}
+
+in (0) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function g(a : int, b : string)  : int =
+a
+]]] END fundecs
+
+in (g("one", "two")) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function g(a : int, b : string)  : int =
+a
+]]] END fundecs
+
+in (g("one")) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function g(a : int, b : string)  : int =
+a
+]]] END fundecs
+
+in (g(3, "one", 5)) endval it = () : unit
+let
+var a := 0
+var a := " "
+
+in (0) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type a = int
+type a = string
+]]] END tydecs
+
+in (0) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function g(a : int)  : int =
+a
+function g(a : int)  : int =
+a
+]]] END fundecs
+
+in (0) endval it = () : unit
+let
+[[[ BEGIN fundecs
+function g(a : int) =
+a
+]]] END fundecs
+
+in (g(2)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type a = int
+]]] END tydecs
+
+in (let
+[[[ BEGIN tydecs
+type a = string
+]]] END tydecs
+
+in (0) end) endval it = () : unit
+/c/cs421/as/testcases/test42.tig:12.86:syntax error: deleting  RBRACE
+let
+[[[ BEGIN tydecs
+type arrtype1 = array of int
+type rectype1 = {name : string, address : string, id : int, age : int}
+type arrtype2 = array of rectype1
+type rectype2 = {name : string, dates : arrtype1}
+type arrtype3 = array of string
+]]] END tydecs
+var arr1 := arrtype1[10] of 0
+var arr2 := arrtype2[5] of rectype1{name  = "aname", address  = "somewhere", id  = 0, age  = 0}
+var arr3 : arrtype3 := arrtype3[100] of ""
+var rec1 := rectype1{name  = "Kapoios", address  = "Kapou", id  = 2432, age  = 44}
+var rec2 := rectype2{name  = "Allos", dates  = arrtype1[3] of 1900}
+
+in (arr1[0] := 1;
+arr1[9] := 3;
+arr2[3].name := "kati";
+arr2[1].age := 23;
+arr3[34] := "sfd";
+rec1.name := "sdf";
+rec2.dates[0] := 2323;
+rec2.dates[2] := 2323) endval it = () : unit
+let
+var a := ()
+
+in ((a+3)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, id : int}
+]]] END tydecs
+var b : rectype := Nil
+
+in (b := Nil) endval it = () : unit
+/c/cs421/as/testcases/test45.tig:5.18:syntax error: inserting  PLUS
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, id : int}
+]]] END tydecs
+var a := (rectype+Nil)
+var a := Nil
+
+in (a) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type rectype = {name : string, id : int}
+]]] END tydecs
+var b : rectype := Nil
+
+in ((Nil=Nil);
+(b=Nil);
+(b<>Nil)) endval it = () : unit
+let
+[[[ BEGIN tydecs
+type a = int
+]]] END tydecs
+var d := 0
+[[[ BEGIN tydecs
+type a = a
+]]] END tydecs
+
+in (0) endval it = () : unit
+let
+
+in () endval it = () : unit
+let
+[[[ BEGIN tydecs
+type i = int
+]]] END tydecs
+var t := 0
+[[[ BEGIN tydecs
+type a = b
+type b = c
+type c = i
+]]] END tydecs
+
+in () endval it = () : unit
+let
+var s1 := "string"
+var s2 := "a long, long, long string"
+var s3 := "hopefully short " 
+"
+var s4 := "well"
+var s5 := "		\t"
+var s6 := ""
+var s7 := "/*"
+
+in (if ((0-1)<>0)
+then (1+(2*3))
+else ((4/5)-6)) endval it = () : unit
+/c/cs421/as/testcases/test51.tig:1.8:syntax error: replacing  IN with  BREAK
+let
+
+in (break) endval it = () : unit
+x.y.z[5]val it = () : unit
+if (1=0)
+then if (1=1)
+then 5
+else 6
+else if (1<>0)
+then 7
+else 8val it = () : unit
+(0-1)val it = () : unit
+/c/cs421/as/testcases/test55.tig:1.9:syntax error: replacing  OF with  PLUS
+(x[2][3]+5)val it = () : unit
+/c/cs421/as/testcases/test56.tig:1.2:syntax error found at EOF
+
+uncaught exception Error
+  raised at: parse.sml:18.47-18.61
+- 
