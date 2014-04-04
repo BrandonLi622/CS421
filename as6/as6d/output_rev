@@ -1,0 +1,276 @@
+Standard ML of New Jersey v110.74 [built: Sat Sep 29 18:19:30 2012]
+- [autoloading]
+[library $smlnj/cm/cm.cm is stable]
+[library $smlnj/internal/cm-sig-lib.cm is stable]
+[library $/pgraph.cm is stable]
+[library $smlnj/internal/srcpath-lib.cm is stable]
+[library $SMLNJ-BASIS/basis.cm is stable]
+[autoloading done]
+[scanning sources.cm]
+[library $/ml-yacc-lib.cm is stable]
+[attempting to load plugin $/lex-ext.cm]
+[library $/lex-ext.cm is stable]
+[library $smlnj/cm/tools.cm is stable]
+[library $smlnj/internal/cm-lib.cm is stable]
+[plugin $/lex-ext.cm loaded successfully]
+[attempting to load plugin $/mllex-tool.cm]
+[library $/mllex-tool.cm is stable]
+[plugin $/mllex-tool.cm loaded successfully]
+[attempting to load plugin $/grm-ext.cm]
+[library $/grm-ext.cm is stable]
+[plugin $/grm-ext.cm loaded successfully]
+[attempting to load plugin $/mlyacc-tool.cm]
+[library $/mlyacc-tool.cm is stable]
+[plugin $/mlyacc-tool.cm loaded successfully]
+[library $SMLNJ-LIB/Util/smlnj-lib.cm is stable]
+[library $SMLNJ-ML-YACC-LIB/ml-yacc-lib.cm is stable]
+[loading (sources.cm):FrontEnd/table.sig]
+[loading (sources.cm):FrontEnd/table.sml]
+[loading (sources.cm):FrontEnd/symbol.sml]
+[loading (sources.cm):ItreeGen/temp.sml]
+[loading (sources.cm):FrontEnd/errormsg.sml]
+[loading (sources.cm):RegAlloc/graph.sig]
+[loading (sources.cm):RegAlloc/graph.sml]
+[loading (sources.cm):RegAlloc/dotgraph.sml]
+[loading (sources.cm):RegAlloc/flowgraph.sml]
+[loading (sources.cm):CodeGen/assem.sml]
+[loading (sources.cm):RegAlloc/makegraph.sml]
+[loading (sources.cm):RegAlloc/liveness.sml]
+[loading (sources.cm):reg-std.sig]
+[loading (sources.cm):CodeGen/register.sml]
+[loading (sources.cm):RegAlloc/regalloc.sml]
+[loading (sources.cm):ItreeGen/tree.sml]
+[loading (sources.cm):ItreeGen/frame.sml]
+[loading (sources.cm):CodeGen/codegen.sml]
+[loading (sources.cm):ItreeGen/translate.sml]
+[loading (sources.cm):ItreeGen/types.sml]
+[loading (sources.cm):ItreeGen/env.sml]
+[loading (sources.cm):FrontEnd/tiger.grm.sig]
+[loading (sources.cm):FrontEnd/tiger.lex.sml]
+[loading (sources.cm):FrontEnd/absyn.sml]
+[loading (sources.cm):FrontEnd/tiger.grm.sml]
+[loading (sources.cm):FrontEnd/parse.sml]
+[loading (sources.cm):CodeGen/canon.sml]
+[loading (sources.cm):ItreeGen/printtree.sml]
+[loading (sources.cm):ItreeGen/semant.sml]
+[loading (sources.cm):main.sml]
+[New bindings added.]
+val it = true : bool
+- In Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+Out Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+In' Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+Out' Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+
+In Table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+Out Table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+In' Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+Out' Table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> []
+Node: n3=> []
+Node: n4=> []
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+
+In Table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+Out Table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+In' Table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+Out' Table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+
+In Table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+Out Table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+In' Table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+Out' Table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+
+Results:
+In table:
+Node: n0=> [3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [1 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> [3 ]
+
+
+Out table:
+Node: n0=> [1 3 ]
+Node: n1=> [1 3 ]
+Node: n2=> [2 3 ]
+Node: n3=> [2 3 ]
+Node: n4=> [1 3 ]
+Node: n5=> [1 3 ]
+Node: n6=> [3 ]
+Node: n7=> []
+
+
+Def table:
+Node: n0=> [1 ]
+Node: n1=> []
+Node: n2=> [2 ]
+Node: n3=> [3 ]
+Node: n4=> [1 ]
+Node: n5=> []
+Node: n6=> []
+Node: n7=> []
+
+
+Use table:
+Node: n0=> []
+Node: n1=> []
+Node: n2=> [1 ]
+Node: n3=> [2 3 ]
+Node: n4=> [2 ]
+Node: n5=> [1 ]
+Node: n6=> []
+Node: n7=> [3 ]
+Temporaries used: 1 2 3 
+Edge: (n0, n1)
+Edge: (n1, n2)
+Edge: (n2, n3)
+Edge: (n3, n4)
+Edge: (n4, n5)
+Edge: (n5, n6)
+Edge: (n5, n1)
+Edge: (n6, n7)
+val it = () : unit
+- 

@@ -1,0 +1,15 @@
+TODO
+
+I need to fill in the move stuff for the liveness graph
+
+I could have done foldr and foldl for a lot of these but I chose to go with recursive functions
+
+Had a bug where I was always looking for next instruction when there might not be one
+
+What happens with the redefinition of a variable? Is that treated as a different temporary?
+
+What counts as a successor of a node? All of the things that come after or just the direct thing? I'm going to assume it's the altter
+
+Do I need to optimize by doing the reverse?
+
+Part b) fixed a bug where the instruction that jumped didn't have the proper fall-through edge too
