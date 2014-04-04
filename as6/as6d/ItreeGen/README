@@ -1,0 +1,41 @@
+To Get This Folder:
+Overwrite your ItreeGen Folder With mine
+# Go into your as6 directory
+# This will overwrite your old ItreeGen
+# And will be runnable with the original sources.cm 
+
+# INSTALLING
+$ mv ItreeGen .ItreeGen.v0
+$ git clone --no-hardlinks /c/cs421/as/Public/6b/IGX/ItreeGen
+
+# UPDATING
+$ git pull
+
+# REVERTING TO INITIAL
+$ rm -r ItreeGen
+$ mv .ItreeGen.v0 ItreeGen
+
+Guarantees:
+All updates will not break the compile. Therefore try git pulling every time you login for the first time each day. That way you are on the cutting edge of iTree.
+
+Running the itree:
+You can get test your installation by using the "exec.sh" file in the directory.
+
+Notes:
+This module will be kept up to date with the changes until I no longer have writer
+permission to this folder, in which case we will transition to the 6c module.
+
+
+This is a module for translate:
+We are not doing a dummy itree. This itree will be useful for the codegen
+parts as it outputs an itree that mostly corresponds with the tiger code input.
+
+Pros:
+	Well Commented.
+	Very good error messages and type checking.
+	Mostly working (certainly representative).
+
+Currently Not Working:
+	Need to do Function Epilogue + Prologue (also end of chapter 7).
+		Need to be improved (already doing return value storage).
+		Need to improve the code's static link analysis.

@@ -1,0 +1,34 @@
+/* define a function */
+let
+function printString(s :string) =
+    let
+        function f() = print(s)
+    in
+        f()
+    end
+
+function helloWorld() =
+    printString("hello world")
+
+function f() = (
+    helloWorld();
+    helloWorld();
+    helloWorld()
+)
+
+function g() =
+    let
+        function f() = helloWorld()
+        function g() :int = 2
+        function h() :int = 3
+        var z := 5
+    in
+    (
+        f()
+    )
+    end
+
+in
+    g()
+end
+
