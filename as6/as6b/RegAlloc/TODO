@@ -13,3 +13,5 @@ What counts as a successor of a node? All of the things that come after or just 
 Do I need to optimize by doing the reverse?
 
 Part b) fixed a bug where the instruction that jumped didn't have the proper fall-through edge too
+
+Part c) What about variables with 0-length liveness?

@@ -36,10 +36,17 @@ Since the interference graph kind of looks like this:
 
 b) instrs2graph() is done and interferenceGraph() is mostly done. I have not implemented color yet
 
-c) For OPER instructions, if you put jump=SOME, I am expecting all possible jump destinations to be explicitly stated.
+c) instrs2graph()
+   --------------
+   I take a 2 phase approach, first learning what all of the labels are, and then on the second pass actually creating
+   the flow graph now that I know which label is associated with which instruction
+
+   For OPER instructions, if you put jump=SOME, I am expecting all possible jump destinations to be explicitly stated.
    The only assumption I will make is that if jump=NONE, it will fall through to the next node (see page 215), which means
    that if jump=SOME and the next instruction is not explicitly specified, I will not assume that it is.
 
+   interferenceGraph()
+   -------------------
    I have both the forward and reverse algorithms specified. Both seem to be correct, reverse algorithm gives better performance.
 
    I am probably not going to implement the move optimization detailed in pages 221-222
@@ -48,4 +55,15 @@ c) For OPER instructions, if you put jump=SOME, I am expecting all possible jump
 
    I'm assuming that more than one definition at a node is an error
 
-   I am not going to use the precolored nodes for any other temporaries (less efficient, but easier to implement)
+   color()
+   -------
+   I will crash if there are not enough registers to fit all of the temporaries
+
+   other
+   -----
+   instrs2graph() and interferenceGraph() should have straightforward calling conventions. to use color() you first need to do
+   structure x = RegAllocGen(Register) in order to be able to call x.color() or x.test() or something, since RegAllocGen is
+   a functor and not a structure
+
+   I have test() examples in all 3 of the files I implemented: makegraph.sml, liveness.sml, and regalloc.sml
+   

@@ -27,6 +27,22 @@ struct
  *)
 
 
+
+
+(* Assume all nodes have already been created and mirror the instr::is list
+   Is a helper function for instrs2graph, so that we can have all the labels
+   before we start trying to make the jump edges *)
+fun get_labels(instr::is, node::ns, label_map) =  (case instr
+	                                 				of Assem.LABEL({assem=assem, lab=lab}) => 
+														let
+															val label_map = Symbol.enter(label_map, lab, node)
+														in
+															get_labels(is, ns, label_map) 
+														end
+													 | _ => get_labels(is, ns, label_map))
+  | get_labels(_, _, label_map) = label_map;
+
+
 (* A helper function that iterates over instructions and adds to the different fields and finally returns the appropriate tuple, which
 	is a pair of (flowgraph, nodes) *)
 fun instrs2graph_helper(Assem.OPER ({assem=assem, dst=dst, src=src, jump=NONE})::tail, 
@@ -93,19 +109,6 @@ fun instrs2graph_helper(Assem.OPER ({assem=assem, dst=dst, src=src, jump=NONE}):
         = (flow_graph, nodes)
 
 
-(* Assume all nodes have already been created and mirror the instr::is list
-   Is a helper function for instrs2graph, so that we can have all the labels
-   before we start trying to make the jump edges *)
-fun get_labels(instr::is, node::ns, label_map) =  (case instr
-	                                 				of Assem.LABEL({assem=assem, lab=lab}) => 
-														let
-															val label_map = Symbol.enter(label_map, lab, node)
-														in
-															get_labels(is, ns, label_map) 
-														end
-													 | _ => get_labels(is, ns, label_map))
-  | get_labels(_, _, label_map) = label_map;
-
 (* Just put an entry in each table for each node so that when we look them up later we actually find something! *)
 (* ismove_table will definitely be overwritten later, def_table and use_table may or may not, and if they are not
    then that means that a particular node does not have definitions or uses, which means don't fill anything in *)
@@ -135,6 +138,11 @@ fun instrs2graph(instrs) =  let
 					  		in
 								instrs2graph_helper(instrs, flow_graph, nodes, 0, label_map) (* Start with instruction 0 *)
 					  		end
+
+  (********************************************************************************************************************************************)
+  (****************************************************     Debugging Functions     ***********************************************************)
+  (********************************************************************************************************************************************)
+
 (* Just for testing *)
 fun dump_temp_table(temp_table, nodes) = 
 	let
@@ -147,60 +155,25 @@ fun dump_temp_table(temp_table, nodes) =
 		done
 	end
 
-fun test() =    let
-					val i1 = Assem.OPER ({assem="test", dst=[1,5,4], src=[2,1,9], jump=SOME([Symbol.symbol("a")])}); (* TODO: What happens if this list is empty? *)
-					val i2 = Assem.OPER ({assem="test", dst=[0,2,3], src=[4,2,1], jump=NONE});
-					val i3 = Assem.LABEL({assem="test", lab = Symbol.symbol("a")});
-					val i4 = Assem.MOVE ({assem="test", dst=0, src=1});
+fun test() =    
+	let
+	 	(* just use variables a,b,c represented as temporaries 1,2,3, and use the instructinos from page 212 in the book *)
+      	val i1 = Assem.OPER ({assem="assign", dst=[1], src=[], jump=NONE});                                                     (* a := 0 *)
+      	val i2 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST2")});                                                   (* Just a label so we can jump here *)
+      	val i3 = Assem.OPER ({assem="assign", dst=[2], src=[1], jump=NONE});                                                    (* b := a + 1 *)
+      	val i4 = Assem.OPER ({assem="assign", dst=[3], src=[2,3], jump=NONE});                                                  (* c := c + b *)
+      	val i5 = Assem.OPER ({assem="assign", dst=[1], src=[2], jump=NONE});                                                    (* a := b*2 *)
+      	val i6 = Assem.OPER ({assem="bool", dst=[], src=[1], jump=SOME([Symbol.symbol("INST2"), Symbol.symbol("INST7")])});     (* a<N *)
+      	val i7 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST7")});                                                   (* Just a label so we can jump here *)
+      	val i8 = Assem.OPER ({assem="return", dst=[], src=[3], jump=NONE});                                                     (* return c *)
 
-					val (graph, nodes) = instrs2graph(i1::i2::i3::i4::nil);
+		val (graph, nodes) = instrs2graph(i1::i2::i3::i4::i5::i6::i7::i8::nil);
 
-				in
-					(case graph
-					 	of Flow.FGRAPH({control, def, use, ismove}) 
-					 		=> (print("\nChecking def\n"); dump_temp_table(def, nodes); 
-					 			print("\nChecking use\n"); dump_temp_table(use, nodes));
-					 (graph, nodes))
-				end
-
-(* (* Just the part a *)
-(* Takes in a list of assembly instructions *)
-fun instrs2graph(x) = let
-					  	val defTable = Graph.Table.empty;
-						val useTable = Graph.Table.empty;
-						val ismoveTable = Graph.Table.empty;
-						val fGraph = Graph.newGraph()
-
-						val n1 = Graph.newNode(fGraph); (* The node representing the instruction: a := 0 *)
-						val n2 = Graph.newNode(fGraph); (* The node representing the instruction: b := a + 1 *)
-						val n3 = Graph.newNode(fGraph); (* The node representing the instruction: c := c + b *)
-						val n4 = Graph.newNode(fGraph); (* The node representing the instruction: a := b * 2 *)
-                         
-						(* Since Temp.temp, which represents a register, must be of type int, let's say that
-					  		a is represented by 1, b is represented by 2, c is represented by 3, and d is
-					  		represented by 4*)
-						val defTable = Graph.Table.enter(defTable, n1, 1::nil);
-					  	val defTable = Graph.Table.enter(defTable, n2, 2::nil);
-					  	val defTable = Graph.Table.enter(defTable, n3, 3::nil);
-					  	val defTable = Graph.Table.enter(defTable, n4, 1::nil);
-
-					  	val useTable = Graph.Table.enter(useTable, n1, nil);
-					  	val useTable = Graph.Table.enter(useTable, n2, 1::nil);
-					  	val useTable = Graph.Table.enter(useTable, n3, 2::3::nil);
-					  	val useTable = Graph.Table.enter(useTable, n4, 2::nil);
-
-					  	(* TODO: What counts as a move exactly? *)
-					  	val ismoveTable = Graph.Table.enter(ismoveTable, n1, false);
-					  	val ismoveTable = Graph.Table.enter(ismoveTable, n2, false);
-					  	val ismoveTable = Graph.Table.enter(ismoveTable, n3, false);
-					  	val ismoveTable = Graph.Table.enter(ismoveTable, n4, false); 
-
-					  in
-						Graph.mk_edge({from=n1, to=n2});
-						Graph.mk_edge({from=n2, to=n3});
-						Graph.mk_edge({from=n3, to=n4});
-
-					  	(* Return value is the graph plus the list of nodes *)
-					  	(Flow.FGRAPH({control=fGraph, def=defTable, use=useTable, ismove=ismoveTable}), n1::n2::n3::n4::nil)
-					  end *)
+		in
+			(case graph
+				of Flow.FGRAPH({control, def, use, ismove}) 
+					=> (print("\nChecking def\n"); dump_temp_table(def, nodes); 
+					 	print("\nChecking use\n"); dump_temp_table(use, nodes));
+					 	(graph, nodes))
+		end
 end

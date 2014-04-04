@@ -17,32 +17,28 @@ sig
    *)
 
 (* Just for testing *)
-val sort_int_list : int list -> int list
+val sort_list : int list -> int list
 val to_sorted_set : int list -> int list
 val set_difference : int list * int list -> int list
 val set_union : int list * int list -> int list
 
 val test : unit -> unit
 
-(*
-  val empty : 'a table
-  val enter : livenessMap * Flow.Graph.node * liveSet -> livenessMap
-  val look : livenessMap * Flow.Graph.node option
-  val *)
-
 end (* signature LIVENESS *)
 
 structure Liveness : LIVENESS = 
 struct
 
-    (* To construct the interference graph, it is convenient to
+  (* To construct the interference graph, it is convenient to
      construct a liveness map at each node in the FlowGraph first.
      For each node in the flowgraph, i.e., for each assembly 
      instruction, we want to easily look up the set S of live 
      temporaries. 
    *)
-  (* type liveSet = unit Temp.Table.table * Temp.temp list
-  type livenessMap = liveSet Flow.Graph.Table.table *)
+  (* 
+  type liveSet = unit Temp.Table.table * Temp.temp list
+  type livenessMap = liveSet Flow.Graph.Table.table 
+   *)
 
   datatype igraph = 
       IGRAPH of {graph : Graph.graph,
@@ -50,13 +46,18 @@ struct
                  gtemp : Temp.temp Graph.Table.table,
                  moves : (Graph.node * Graph.node) list}
 
+  (********************************************************************************************************************************************)
+  (****************************************************        Set Utilities        ***********************************************************)
+  (********************************************************************************************************************************************)
+
+
   (* Right now is actually just insertion sort *)
-  fun sort_int_list(lis) =  let
-                              fun insert(n, h::t) = if n < h then n::h::t else h::insert(n, t)
-                                | insert(n, []) = [n]
-                            in
-                              foldl insert [] lis
-                            end;
+  fun sort_list(lis) =  let
+                          fun insert(n, h::t) = if n < h then n::h::t else h::insert(n, t)
+                            | insert(n, []) = [n]
+                        in
+                          foldl insert [] lis
+                        end;
 
   (* Does all of the hard work for to_sorted_set *)
   fun to_sorted_set_helper(a::b::xs : int list) = if a = b then to_sorted_set_helper(a::xs) else a::to_sorted_set_helper(b::xs)
@@ -64,13 +65,13 @@ struct
     | to_sorted_set_helper(nil) = nil; 
 
   (* Removes all duplicates from and sorts @lis *)
-  fun to_sorted_set(lis) = to_sorted_set_helper(sort_int_list(lis));
+  fun to_sorted_set(lis) = to_sorted_set_helper(sort_list(lis));
 
   fun set_union(set1, set2) = to_sorted_set(set1@set2);
 
-  fun set_difference(set1 as a::xs : int list, set2) =  if List.exists (fn b => if a = b then true else false) set2
-                                                        then set_difference(xs, set2)
-                                                        else a::set_difference(xs, set2)
+  fun set_difference(set1 as a::xs : int list, set2 : int list) = if List.exists (fn b => if a = b then true else false) set2
+                                                                  then set_difference(xs, set2)
+                                                                  else a::set_difference(xs, set2)
     | set_difference(nil, _) = nil;
 
   (* For two sorted sets, checks if they are equal *)
@@ -144,6 +145,10 @@ struct
               def_table, use_table)
         = (in_table, in'_table, out_table, out'_table)
 
+  (********************************************************************************************************************************************)
+  (****************************************************      Forward Algorithm      ***********************************************************)
+  (********************************************************************************************************************************************)
+
   (* Assume in[n] and out[n] are already all initialized, performs the repeat...until loop on page 214 
      The iteration will always be run at least once assuming false is passed in as the last argument *)
   (* Here, nodes are from the control flow graph*)
@@ -196,6 +201,9 @@ struct
           (in_table, in'_table, out_table, out'_table)
         end
 
+  (********************************************************************************************************************************************)
+  (****************************************************      Reverse Algorithm      ***********************************************************)
+  (********************************************************************************************************************************************)
 
   (* Alternative algorithm *)
   (* Used for get_liveness_edges_rev, flips the evaluation of in and out to make the algorithm faster 
@@ -276,7 +284,9 @@ struct
           (in_table, in'_table, out_table, out'_table)
         end
 
-
+  (********************************************************************************************************************************************)
+  (****************************************************        Graph Utilites       ***********************************************************)
+  (********************************************************************************************************************************************)
   
   (* Converts a use or def table from makegraph into a livenessMap type *)
   (* Here, nodes are from the control flow graph, assume liveness_map already exists *)
@@ -302,12 +312,6 @@ struct
           end
     | create_igraph_mappings(nil, tnode_table, gtemp_table, igraph) = (tnode_table, gtemp_table);
 
-  (* Returns a (node,node) list of all of the moves *)
-  (* @node is a node from the control flow graph, but this will return a list of pairs of igraph nodes! *)
-  (* @def, @use, and @ismove are from flowgraph *)
-  (* TODO: Not implemented yet, but also not super critical yet! *)
-  fun create_moves_list(temps : Temp.temp list, tnode, def, use, ismove, node::tail) = nil
-    | create_moves_list(temps, tnode, def, use, ismove, nil) = nil;
 
 
   fun are_adjacent(node1, node2) =  let
@@ -364,24 +368,62 @@ struct
         end
     | get_all_temporaries(nil, _, current_temps) = to_sorted_set(current_temps); (* List might have duplicates so we handle that here *)
 
+  (********************************************************************************************************************************************)
+  (****************************************************     Debugging Functions     ***********************************************************)
+  (********************************************************************************************************************************************)
 
-  (* Just for debugging *)
+  (* Prints the temporaries *)
   fun show_temps(alltemps) = (print "Temporaries used: "; map (fn (temp) => print(Int.toString(temp) ^ " ")) alltemps; print ("\n"));
 
-  (* Just for debugging *)
+  (* Prints the edges on the control_graph *)
   fun show_edges(control_graph, node::tail) = (let val successors = Graph.succ(node) 
                                                in map (fn (succ) => print("Edge: (" ^ Graph.nodename(node) ^ ", " ^ Graph.nodename(succ) ^ ")\n")) successors 
                                                end; 
                                                show_edges(control_graph, tail))
     | show_edges(control_graph, nil) = ();
 
-  (* Just for debugging *)
+  (* Prints all of the adjacencies between nodes *)
   fun show_adj(node::tail) =  let
                                 val adj_nodes = Graph.adj(node)
                               in
                                 (map (fn(adj_node) => print("(" ^ Graph.nodename(node) ^ ", " ^ Graph.nodename(adj_node) ^ ")\n")) adj_nodes; show_adj(tail))
                               end
     | show_adj(nil) = ();
+
+  fun test() = 
+    let
+      (* just use variables a,b,c represented as temporaries 1,2,3, and use the instructinos from page 212 in the book *)
+      val i1 = Assem.OPER ({assem="assign", dst=[1], src=[], jump=NONE});                                                     (* a := 0 *)
+      val i2 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST2")});                                                   (* Just a label so we can jump here *)
+      val i3 = Assem.OPER ({assem="assign", dst=[2], src=[1], jump=NONE});                                                    (* b := a + 1 *)
+      val i4 = Assem.OPER ({assem="assign", dst=[3], src=[2,3], jump=NONE});                                                  (* c := c + b *)
+      val i5 = Assem.OPER ({assem="assign", dst=[1], src=[2], jump=NONE});                                                    (* a := b*2 *)
+      val i6 = Assem.OPER ({assem="bool", dst=[], src=[1], jump=SOME([Symbol.symbol("INST2"), Symbol.symbol("INST7")])});     (* a<N *)
+      val i7 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST7")});                                                   (* Just a label so we can jump here *)
+      val i8 = Assem.OPER ({assem="return", dst=[], src=[3], jump=NONE});                                                     (* return c *)
+
+      val (graph as Flow.FGRAPH({control, def, use, ismove}), nodes) = MakeGraph.instrs2graph(i1::i2::i3::i4::i5::i6::i7::i8::nil);
+      val result = interferenceGraph(graph);
+      
+    in
+      ()
+    end
+
+  (********************************************************************************************************************************************)
+  (****************************************************       Other Utilities       ***********************************************************)
+  (********************************************************************************************************************************************)
+
+
+  (* Returns a (node,node) list of all of the moves *)
+  (* @node is a node from the control flow graph, but this will return a list of pairs of igraph nodes! *)
+  (* @def, @use, and @ismove are from flowgraph *)
+  (* TODO: Not implemented yet, but also not super critical yet! *)
+  fun create_moves_list(temps : Temp.temp list, tnode, def, use, ismove, node::tail) = nil
+    | create_moves_list(temps, tnode, def, use, ismove, nil) = nil;
+
+  (********************************************************************************************************************************************)
+  (****************************************************      interferenceGraph      ***********************************************************)
+  (********************************************************************************************************************************************)
 
   (* TODO: I'm not sure if we really need to use livenessMap... *)
   fun interferenceGraph(Flow.FGRAPH({control, def, use, ismove})) =
@@ -422,6 +464,7 @@ struct
         val garbage = make_graph_edges(igraph, nodes, def_table, out_table, tnode);
 
         (* TODO: Check this for correctness *)
+        (* This gets dumped before passing to color anyways *)
         fun l_mapping(x:Graph.node) = case Graph.Table.look(out_table,x)
           of SOME(lst) => lst
            | NONE => (print "Node does not exist"; nil)
@@ -450,45 +493,11 @@ struct
         (IGRAPH({graph=igraph, tnode=tnode, gtemp=gtemp, moves=moves}), l_mapping)
       end;
 
-  fun test() = 
-    let
-      (* just use variables a,b,c represented as temporaries 1,2,3, and use the instructinos from page 212 in the book *)
-      val i1 = Assem.OPER ({assem="assign", dst=[1], src=[], jump=NONE});                                                     (* a := 0 *)
-      val i2 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST2")});                                                   (* Just a label so we can jump here *)
-      val i3 = Assem.OPER ({assem="assign", dst=[2], src=[1], jump=NONE});                                                    (* b := a + 1 *)
-      val i4 = Assem.OPER ({assem="assign", dst=[3], src=[2,3], jump=NONE});                                                  (* c := c + b *)
-      val i5 = Assem.OPER ({assem="assign", dst=[1], src=[2], jump=NONE});                                                    (* a := b*2 *)
-      val i6 = Assem.OPER ({assem="bool", dst=[], src=[1], jump=SOME([Symbol.symbol("INST2"), Symbol.symbol("INST7")])});     (* a<N *)
-      val i7 = Assem.LABEL({assem="filler", lab = Symbol.symbol("INST7")});                                                   (* Just a label so we can jump here *)
-      val i8 = Assem.OPER ({assem="return", dst=[], src=[3], jump=NONE});                                                     (* return c *)
-
-      val (graph as Flow.FGRAPH({control, def, use, ismove}), nodes) = MakeGraph.instrs2graph(i1::i2::i3::i4::i5::i6::i7::i8::nil);
-      val result = interferenceGraph(graph);
-      
-    in
-      ()
-    end
 
   (* after constructing the livenessMap, it is quite easy to
      construct the interference graph, just scan each node in
      the Flow Graph, add interference edges properly ... 
    *)
-
-
-  (* Now that it knows which temporaries are live out at each node in the table, and it already knew which
-     instructions are move instructions based on instrs2graph(), fill in the fields *)
-  (* TODO: specify which kind of node it is! *)
-  (* WARNING: This is going to be scrapped! Was old code! *)
-  fun fill_in_graph_fields(node::tail, out_table, tnode, gtemp, moves) = 
-        let
-          val instr = getOpt(Graph.Table.look(out_table, node), []); (* This should never be NONE, it should get a list of temporaries *)
-          (* TODO: This is not filled in! *)
-          (* val new_tnode = Temp.Table.enter(tnode, node, ) *)
-        in
-          fill_in_graph_fields(tail, out_table, tnode, gtemp, moves)
-        end
-    | fill_in_graph_fields(nil, out_table, tnode, gtemp, moves) = (tnode, gtemp, moves)
-
 
 
 
